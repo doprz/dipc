@@ -5,6 +5,8 @@ use std::path::PathBuf;
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Hash, Debug)]
 enum ColorPalette {
     Catppuccin,
+    Gruvbox,
+    GruvboxMaterial,
     Nord,
 }
 
@@ -12,6 +14,8 @@ impl std::fmt::Display for ColorPalette {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ColorPalette::Catppuccin => write!(f, "catppuccin"),
+            ColorPalette::Gruvbox => write!(f, "gruvbox"),
+            ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
             ColorPalette::Nord => write!(f, "nord"),
         }
     }

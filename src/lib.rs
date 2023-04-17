@@ -190,6 +190,18 @@ pub fn init_color_palettes() -> HashMap<String, HashMap<String, Vec<(String, u32
     let color_palette = parse_color_palette(&json_color_palette).unwrap();
     color_palettes.insert("catppuccin".to_string(), color_palette);
 
+    // gruvbox
+    let json_color_palette: serde_json::Value =
+        serde_json::from_str(include_str!("palettes/gruvbox.json")).unwrap();
+    let color_palette = parse_color_palette(&json_color_palette).unwrap();
+    color_palettes.insert("gruvbox".to_string(), color_palette);
+
+    // gruvbox-material
+    let json_color_palette: serde_json::Value =
+        serde_json::from_str(include_str!("palettes/gruvbox-material.json")).unwrap();
+    let color_palette = parse_color_palette(&json_color_palette).unwrap();
+    color_palettes.insert("gruvbox-material".to_string(), color_palette);
+
     // nord
     let json_color_palette: serde_json::Value =
         serde_json::from_str(include_str!("palettes/nord.json")).unwrap();
