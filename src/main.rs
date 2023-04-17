@@ -1,25 +1,8 @@
-use clap::{Parser, ValueEnum};
-use image::RgbaImage;
 use std::path::PathBuf;
+use clap::Parser;
+use image::RgbaImage;
 
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Hash, Debug)]
-enum ColorPalette {
-    Catppuccin,
-    Gruvbox,
-    GruvboxMaterial,
-    Nord,
-}
-
-impl std::fmt::Display for ColorPalette {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ColorPalette::Catppuccin => write!(f, "catppuccin"),
-            ColorPalette::Gruvbox => write!(f, "gruvbox"),
-            ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
-            ColorPalette::Nord => write!(f, "nord"),
-        }
-    }
-}
+use dipc::ColorPalette;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -34,7 +17,7 @@ struct Cli {
 
     /// Color palette variation(s) to use
     #[arg(long)]
-    color_palette_variation: Vec<String>,
+    color_palette_variation: Option<Vec<String>>,
 }
 
 fn main() {
@@ -42,12 +25,25 @@ fn main() {
     // println!("{:#?}", cli);
 
     let color_palettes = dipc::init_color_palettes();
-    let color_palette = color_palettes.get(&cli.color_palette.to_string()).unwrap();
-    println!(
-        "{} - {:#?}",
-        &cli.color_palette.to_string(),
-        &cli.color_palette_variation
-    );
+    let color_palette = match color_palettes.get(&cli.color_palette.to_string()) {
+        Some(palette) => palette,
+        None => {
+            eprintln!("Error: Color palette {} not found.", &cli.color_palette.to_string());
+            std::process::exit(1);
+        }
+    };
+    match &cli.color_palette_variation {
+        Some(variations) => {
+            println!(
+                "{} - {:#?}",
+                &cli.color_palette.to_string(),
+                variations
+            );
+        }
+        None => {
+            println!("{}", &cli.color_palette.to_string());
+        }
+    }
 
     color_palette.iter().for_each(|(name, palette)| {
         println!("{} - {} colors:", name, palette.len());
@@ -57,30 +53,54 @@ fn main() {
     let image: RgbaImage = match image::open(&cli.image) {
         Ok(image) => image.to_rgba8(),
         Err(e) => {
-            eprintln!("Error: {}", e);
+            eprintln!("Error opening image: {}", e);
             std::process::exit(1);
         }
     };
 
-    let palette_variations =
-        dipc::get_color_palette_variations(&color_palette, &cli.color_palette_variation);
-    // println!("{:#?}", palette_variations);
+    match cli.color_palette_variation {
+        Some(variations) => {
+            let palette_variations =
+                dipc::get_color_palette_variations(color_palette, &variations);
+            // println!("{:#?}", palette_variations);
 
-    let palette_lab = dipc::convert_palette_to_labs(&palette_variations);
+            let output_file_name = match dipc::output_file_name(
+                &cli.image,
+                &cli.color_palette,
+                &variations,
+            ) {
+                Ok(output_file_name) => output_file_name,
+                Err(e) => {
+                    eprintln!("Error getting output file name: {}", e);
+                    std::process::exit(1);
+                }
+            };
 
-    let labs_image: Vec<dipc::Lab> = dipc::rgba_pixels_to_labs(&image);
-    let converted_image: Vec<u8> = labs_image
-        .iter()
-        .map(|lab| dipc::convert_lab_to_palette(lab, &palette_lab))
-        .flatten()
-        .collect();
-    image::save_buffer_with_format(
-        "converted.png",
-        &converted_image,
-        image.width(),
-        image.height(),
-        image::ColorType::Rgba8,
-        image::ImageFormat::Png,
-    )
-    .unwrap();
+            println!("Output file name: {}", output_file_name);
+            println!("Converting image... (this may take a while)");
+
+            let palette_lab = dipc::convert_palette_to_labs(&palette_variations);
+            let labs_image: Vec<dipc::Lab> = dipc::rgba_pixels_to_labs(&image);
+            let converted_image: Vec<u8> = labs_image
+                .iter()
+                .map(|lab| dipc::convert_lab_to_palette(lab, &palette_lab))
+                .flatten()
+                .collect();
+
+            match image::save_buffer_with_format(
+                &output_file_name,
+                &converted_image,
+                image.width(),
+                image.height(),
+                image::ColorType::Rgba8,
+                image::ImageFormat::Png,
+            ) {
+                Ok(_) => println!("Image converted successfully."),
+                Err(e) => eprintln!("Error converting image: {}", e),
+            }
+                }
+        None => {
+            println!("No color palette variation(s) specified.");
+        }
+    }
 }

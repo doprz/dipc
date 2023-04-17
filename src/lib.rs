@@ -1,5 +1,27 @@
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::error::Error;
+
+use clap::ValueEnum;
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Hash, Debug)]
+pub enum ColorPalette {
+    Catppuccin,
+    Gruvbox,
+    GruvboxMaterial,
+    Nord,
+}
+
+impl std::fmt::Display for ColorPalette {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ColorPalette::Catppuccin => write!(f, "catppuccin"),
+            ColorPalette::Gruvbox => write!(f, "gruvbox"),
+            ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
+            ColorPalette::Nord => write!(f, "nord"),
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug)]
 pub struct Lab {
@@ -44,6 +66,35 @@ impl From<Lab> for deltae::LabValue {
 
 // Implement DeltaEq for Lab
 impl<D: deltae::Delta + Copy> deltae::DeltaEq<D> for Lab {}
+
+pub fn output_file_name(input_file_path: &PathBuf, color_palette: &ColorPalette, color_palette_variation: &[String]) -> Result<String, Box<dyn Error>> {
+    let file_stem = match input_file_path.file_stem() {
+        Some(file_stem) => {
+            match file_stem.to_str() {
+                Some(file_stem) => file_stem,
+                None => return Err("Could not get file stem".into()),
+            }
+        },
+        None => return Err("Could not get file stem".into()),
+    };
+    // let file_extension = match input_file_path.extension() {
+    //     Some(file_extension) => file_extension,
+    //     None => return Err("Could not get file extension".into()),
+    // };
+
+    let mut output_file_name = String::new();
+
+    output_file_name.push_str(file_stem);
+    output_file_name.push_str(format!("_{}", color_palette).as_str());
+
+    color_palette_variation.iter().for_each(|variation| {
+        output_file_name.push_str(format!("-{}", variation).as_str());
+    });
+
+    output_file_name.push_str(".png");
+
+    Ok(output_file_name)
+}
 
 // pub fn parse_color_palette(
 //     json: &serde_json::Value,
@@ -218,7 +269,13 @@ pub fn get_color_palette_variations(
     let mut palette = Vec::new();
 
     for variation in variations {
-        let color = color_palette.get(variation).unwrap();
+        let color = match color_palette.get(variation) {
+            Some(color) => color,
+            None => {
+                eprintln!("Invalid color variation: {}", variation);
+                std::process::exit(1);
+            }
+        };
         palette.append(&mut color.clone());
     }
 
