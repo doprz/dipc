@@ -1,5 +1,6 @@
 use clap::Parser;
 use image::RgbaImage;
+use rayon::prelude::*;
 use std::path::PathBuf;
 
 use dipc::ColorPalette;
@@ -83,7 +84,7 @@ fn main() {
             let palette_lab = dipc::convert_palette_to_labs(&palette_variations);
             let labs_image: Vec<dipc::Lab> = dipc::rgba_pixels_to_labs(&image);
             let converted_image: Vec<u8> = labs_image
-                .iter()
+                .par_iter()
                 .map(|lab| dipc::convert_lab_to_palette(lab, &palette_lab))
                 .flatten()
                 .collect();
