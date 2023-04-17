@@ -1,6 +1,6 @@
 use std::collections::HashMap;
-use std::path::PathBuf;
 use std::error::Error;
+use std::path::PathBuf;
 
 use clap::ValueEnum;
 
@@ -67,13 +67,15 @@ impl From<Lab> for deltae::LabValue {
 // Implement DeltaEq for Lab
 impl<D: deltae::Delta + Copy> deltae::DeltaEq<D> for Lab {}
 
-pub fn output_file_name(input_file_path: &PathBuf, color_palette: &ColorPalette, color_palette_variation: &[String]) -> Result<String, Box<dyn Error>> {
+pub fn output_file_name(
+    input_file_path: &PathBuf,
+    color_palette: &ColorPalette,
+    color_palette_variation: &[String],
+) -> Result<String, Box<dyn Error>> {
     let file_stem = match input_file_path.file_stem() {
-        Some(file_stem) => {
-            match file_stem.to_str() {
-                Some(file_stem) => file_stem,
-                None => return Err("Could not get file stem".into()),
-            }
+        Some(file_stem) => match file_stem.to_str() {
+            Some(file_stem) => file_stem,
+            None => return Err("Could not get file stem".into()),
         },
         None => return Err("Could not get file stem".into()),
     };

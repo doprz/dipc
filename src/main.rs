@@ -1,6 +1,6 @@
-use std::path::PathBuf;
 use clap::Parser;
 use image::RgbaImage;
+use std::path::PathBuf;
 
 use dipc::ColorPalette;
 
@@ -18,6 +18,10 @@ struct Cli {
     /// Color palette variation(s) to use
     #[arg(long)]
     color_palette_variation: Option<Vec<String>>,
+
+    /// Verbose mode (-v, -vv, -vvv)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    verbose: u8,
 }
 
 fn main() {
@@ -28,17 +32,16 @@ fn main() {
     let color_palette = match color_palettes.get(&cli.color_palette.to_string()) {
         Some(palette) => palette,
         None => {
-            eprintln!("Error: Color palette {} not found.", &cli.color_palette.to_string());
+            eprintln!(
+                "Error: Color palette {} not found.",
+                &cli.color_palette.to_string()
+            );
             std::process::exit(1);
         }
     };
     match &cli.color_palette_variation {
         Some(variations) => {
-            println!(
-                "{} - {:#?}",
-                &cli.color_palette.to_string(),
-                variations
-            );
+            println!("{} - {:#?}", &cli.color_palette.to_string(), variations);
         }
         None => {
             println!("{}", &cli.color_palette.to_string());
@@ -60,24 +63,22 @@ fn main() {
 
     match cli.color_palette_variation {
         Some(variations) => {
-            let palette_variations =
-                dipc::get_color_palette_variations(color_palette, &variations);
+            let palette_variations = dipc::get_color_palette_variations(color_palette, &variations);
             // println!("{:#?}", palette_variations);
 
-            let output_file_name = match dipc::output_file_name(
-                &cli.image,
-                &cli.color_palette,
-                &variations,
-            ) {
-                Ok(output_file_name) => output_file_name,
-                Err(e) => {
-                    eprintln!("Error getting output file name: {}", e);
-                    std::process::exit(1);
-                }
-            };
+            let output_file_name =
+                match dipc::output_file_name(&cli.image, &cli.color_palette, &variations) {
+                    Ok(output_file_name) => output_file_name,
+                    Err(e) => {
+                        eprintln!("Error getting output file name: {}", e);
+                        std::process::exit(1);
+                    }
+                };
 
             println!("Output file name: {}", output_file_name);
             println!("Converting image... (this may take a while)");
+
+            let start = std::time::Instant::now();
 
             let palette_lab = dipc::convert_palette_to_labs(&palette_variations);
             let labs_image: Vec<dipc::Lab> = dipc::rgba_pixels_to_labs(&image);
@@ -98,7 +99,10 @@ fn main() {
                 Ok(_) => println!("Image converted successfully."),
                 Err(e) => eprintln!("Error converting image: {}", e),
             }
-                }
+
+            let duration = start.elapsed().as_secs_f32();
+            println!("Conversion took {} seconds.", duration);
+        }
         None => {
             println!("No color palette variation(s) specified.");
         }
