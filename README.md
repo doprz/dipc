@@ -1,5 +1,7 @@
 # dipc
 
+[![crates.io](https://img.shields.io/crates/v/dipc)](https://crates.io/crates/dipc)
+
 doprz' image palette converter
 
 Convert your favorite images and wallpapers with your favorite color palettes/themes
