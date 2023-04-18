@@ -1,8 +1,8 @@
 [package]
 name = "dipc"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
-description = "doprz' image palette converter"
+description = "Convert your favorite images and wallpapers with your favorite color palettes/themes"
 license = "MIT OR Apache-2.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
