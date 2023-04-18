@@ -1,0 +1,53 @@
+{
+    "Rose Pine": {
+        "Base": "#191724",
+        "Surface": "#1F1D2E",
+        "Overlay": "#26233A",
+        "Muted": "#6E6A86",
+        "Subtle": "#908CAA",
+        "Text": "#E0DEF4",
+        "Love": "#EB6F92",
+        "Gold": "#F6C177",
+        "Rose": "#EBBCBA",
+        "Pine": "#31748F",
+        "Foam": "#9CCFD8",
+        "Iris": "#C4A7E7",
+        "Highlight Low": "#21202E",
+        "Highlight Med": "#403D52",
+        "Highlight High": "#524F67"
+    },
+    "Rose Pine Moon": {
+        "Base": "#232136",
+        "Surface": "#2A273F",
+        "Overlay": "#393552",
+        "Muted": "#6E6A86",
+        "Subtle": "#908CAA",
+        "Text": "#E0DEF4",
+        "Love": "#EB6F92",
+        "Gold": "#F6C177",
+        "Rose": "#EA9A97",
+        "Pine": "#3E8FB0",
+        "Foam": "9CCFD8",
+        "Iris": "#C4A7E7",
+        "Highlight Low": "#2A283E",
+        "Highlight Med": "#44415A",
+        "Highlight High": "#56526E"
+    },
+    "Rose Pine Dawn": {
+        "Base": "#FAF4ED",
+        "Surface": "#FFFAF3",
+        "Overlay": "#F2E9E1",
+        "Muted": "#9893A5",
+        "Subtle": "#797593",
+        "Text": "#575279",
+        "Love": "#B4637A",
+        "Gold": "#EA9D34",
+        "Rose": "#D7827E",
+        "Pine": "#286983",
+        "Foam": "#56949F",
+        "Iris": "#907AA9",
+        "Highlight Low": "#F4EDE8",
+        "Highlight Med": "#DFDAD9",
+        "Highlight High": "#CECACD"
+    }
+}
