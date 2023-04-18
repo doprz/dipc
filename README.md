@@ -25,6 +25,22 @@ Victor Rosario - [https://unsplash.com/@vrrosario](https://unsplash.com/@vrrosar
 
 Ivan Rohovchenko - [https://unsplash.com/@ivrn](https://unsplash.com/@ivrn)
 
+## Installation
+
+### Cargo
+
+```sh
+cargo install dipc
+```
+
+### From Source
+
+To build and install from source, first checkout the tag or branch you want to install, then run
+```sh
+cargo install --path .
+```
+This will build and install `dipc` in your `~/.cargo/bin`. Make sure that `~/.cargo/bin` is in your `$PATH` variable.
+
 ## Usage
 
 ```
