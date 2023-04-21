@@ -9,6 +9,7 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 ## Color Palettes/Themes
 
 - catppuccin
+- everforest
 - gruvbox
 - gruvbox-material
 - nord
