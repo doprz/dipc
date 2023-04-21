@@ -94,7 +94,7 @@ pub fn output_file_name(
     output_file_name.push_str(format!("_{}", color_palette).as_str());
 
     color_palette_variation.iter().for_each(|variation| {
-        output_file_name.push_str(format!("-{}", variation).as_str());
+        output_file_name.push_str(format!("-{}", variation.replace(" ", "-")).as_str());
     });
 
     output_file_name.push_str(".png");
