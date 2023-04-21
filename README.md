@@ -55,7 +55,7 @@ Options:
   -i, --image <FILE>
           The image to process
       --color-palette <COLOR_PALETTE>
-          The color palette to use [possible values: catppuccin, gruvbox, gruvbox-material, nord, rose-pine]
+          The color palette to use [possible values: catppuccin, everforest, gruvbox, gruvbox-material, nord, rose-pine]
   -a, --all
           Use all color palette variations
       --color-palette-variation <COLOR_PALETTE_VARIATION>
