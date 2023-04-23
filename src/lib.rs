@@ -7,6 +7,7 @@ use clap::ValueEnum;
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Hash, Debug)]
 pub enum ColorPalette {
     Catppuccin,
+    Edge,
     Everforest,
     Gruvbox,
     GruvboxMaterial,
@@ -19,6 +20,7 @@ impl std::fmt::Display for ColorPalette {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ColorPalette::Catppuccin => write!(f, "catppuccin"),
+            ColorPalette::Edge => write!(f, "edge"),
             ColorPalette::Everforest => write!(f, "everforest"),
             ColorPalette::Gruvbox => write!(f, "gruvbox"),
             ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
@@ -248,6 +250,12 @@ pub fn init_color_palettes() -> HashMap<String, HashMap<String, Vec<(String, u32
         serde_json::from_str(include_str!("palettes/catppuccin.json")).unwrap();
     let color_palette = parse_color_palette(&json_color_palette).unwrap();
     color_palettes.insert("catppuccin".to_string(), color_palette);
+
+    // edge
+    let json_color_palette: serde_json::Value =
+        serde_json::from_str(include_str!("palettes/edge.json")).unwrap();
+    let color_palette = parse_color_palette(&json_color_palette).unwrap();
+    color_palettes.insert("edge".to_string(), color_palette);
 
     // everforest
     let json_color_palette: serde_json::Value =
