@@ -1,121 +1,195 @@
-// Copyright (c) 2023 doprz
-// SPDX-License-Identifier: MIT OR Apache-2.0
-use clap::{Args, Parser};
-use image::RgbaImage;
-use rayon::prelude::*;
-use std::path::PathBuf;
+use std::{
+    ffi::OsStr,
+    io::{self, stdout, BufWriter, Write},
+};
 
-use dipc::ColorPalette;
+use clap::Parser;
+use cli::ColorPalette;
+use delta::Lab;
+use owo_colors::{OwoColorize, Style};
+use rayon::{
+    prelude::{
+        IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
+    },
+    slice::{ParallelSlice, ParallelSliceMut},
+};
 
-#[derive(Args, Debug)]
-#[group(required = true, multiple = false)]
-struct ColorPaletteVariationArgGroup {
-    /// Use all color palette variations
-    #[arg(short, long)]
-    all: bool,
+use crate::{cli::Cli, config::parse_palette};
 
-    /// Color palette variation(s) to use
-    #[arg(long)]
-    color_palette_variation: Vec<String>,
-}
+mod cli;
+mod config;
+mod delta;
+mod palettes;
 
-#[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Cli {
-    /// The image to process
-    #[arg(short, long, value_name = "FILE")]
-    image: PathBuf,
-
-    /// The color palette to use
-    #[arg(long, value_enum)]
-    color_palette: ColorPalette,
-
-    #[command(flatten)]
-    color_palette_variation: ColorPaletteVariationArgGroup,
-
-    /// Verbose mode (-v, -vv, -vvv)
-    #[arg(short, long, action = clap::ArgAction::Count)]
-    verbose: u8,
-}
-
-fn main() {
+fn main() -> io::Result<()> {
     let cli = Cli::parse();
-    // println!("{:#?}", cli);
-
-    let color_palettes = dipc::init_color_palettes();
-    let color_palette = match color_palettes.get(&cli.color_palette.to_string()) {
-        Some(palette) => palette,
-        None => {
+    let Cli {
+        color_palette,
+        styles,
+        mut output,
+        process,
+        verbose,
+    } = cli;
+    if process.is_empty() {
+        eprintln!(
+            "{}",
+            "You need to provide at least a single image to process"
+                .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+        );
+        std::process::exit(127)
+    };
+    if !output.is_dir() {
+        eprintln!(
+            "Provided output `{}` does not appear to be a directory.\nAttempting to create it!",
+            output
+                .display()
+                .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+        );
+        if let Err(err) = std::fs::create_dir_all(&output) {
             eprintln!(
-                "Error: Color palette {} not found.",
-                &cli.color_palette.to_string()
+                "Creating provided output directory failed with error: {}",
+                err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
             );
-            std::process::exit(1);
+            std::process::exit(127)
+        };
+    }
+    let stdout = stdout().lock();
+    let mut writer = BufWriter::new(stdout);
+    if verbose >= 2 {
+        writeln!(
+            writer,
+            "\
+Using color palette: {color_palette:?}
+With styles: {styles:?}"
+        )?;
+    }
+    if verbose >= 3 {
+        writeln!(
+            writer,
+            "\
+To process {process:?}
+And writing results to {output:?}"
+        )?;
+    };
+    let mut name = {
+        if !matches!(color_palette, ColorPalette::RawJSON { .. }) {
+            format!("{color_palette:?}")
+        } else {
+            String::new()
         }
     };
-
-    let color_palette_variations_selected = match &cli.color_palette_variation.all {
-        true => {
-            let mut color_palette_variations_selected = Vec::new();
-            for (variation, _) in color_palette.iter() {
-                color_palette_variations_selected.push(variation.to_string());
+    let palettes = match parse_palette(color_palette.get_json(), styles) {
+        Ok(p) => p,
+        Err(err) => {
+            eprintln!(
+                "{}",
+                err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+            );
+            std::process::exit(127)
+        }
+    };
+    // Print palettes
+    let color = supports_color::on_cached(supports_color::Stream::Stdout)
+        .is_some_and(|level| level.has_16m);
+    let max_name = palettes
+        .iter()
+        .map(|p| p.name.as_ref().map(|n| n.len()).unwrap_or_default())
+        .max()
+        .unwrap_or_default();
+    for palette in &palettes {
+        if let Some(name) = &palette.name {
+            writeln!(
+                writer,
+                "{:<max_name$} - {} colors{}",
+                name.if_supports_color(owo_colors::Stream::Stdout, |text| {
+                    let style = Style::new().bold().bright_white();
+                    text.style(style)
+                }),
+                palette.colors.len(),
+                if color { ":" } else { "" }
+            )?;
+        }
+        const WIDTH: usize = 8;
+        let mut idx = 0;
+        if color {
+            for (_, color) in &palette.colors {
+                let [r, g, b] = color.0;
+                write!(writer, "{}", "  ".on_truecolor(r, g, b))?;
+                if idx % WIDTH == WIDTH - 1 {
+                    writeln!(writer)?;
+                }
+                idx += 1;
             }
-            color_palette_variations_selected
-        },
-        false => cli.color_palette_variation.color_palette_variation,
-    };
-    println!("Color palette variation(s) selected: {:?}", color_palette_variations_selected);
-
-    color_palette.iter().for_each(|(name, palette)| {
-        println!("{} - {} colors:", name, palette.len());
-        dipc::ansi_paint_palette(palette);
-    });
-
-    let image: RgbaImage = match image::open(&cli.image) {
-        Ok(image) => image.to_rgba8(),
-        Err(e) => {
-            eprintln!("Error opening image: {}", e);
-            std::process::exit(1);
+            writeln!(writer)?;
         }
-    };
-
-    let palette_variations = dipc::get_color_palette_variations(color_palette, &color_palette_variations_selected);
-    // println!("{:#?}", palette_variations);
-
-    let output_file_name =
-        match dipc::output_file_name(&cli.image, &cli.color_palette, &color_palette_variations_selected) {
-            Ok(output_file_name) => output_file_name,
-            Err(e) => {
-                eprintln!("Error getting output file name: {}", e);
-                std::process::exit(1);
+    }
+    writer.flush()?;
+    palettes.iter().for_each(|p| {
+        p.name.as_ref().map(|n| {
+            name.push('-');
+            name.push_str(n)
+        });
+    });
+    let palettes: Vec<_> = palettes
+        .into_par_iter()
+        .flat_map_iter(|palette| {
+            palette
+                .colors
+                .into_iter()
+                .map(|(_name, color)| Lab::from(color.0))
+        })
+        .collect();
+    for path in process {
+        // Open image
+        let mut image = match image::open(&path) {
+            Ok(i) => i.into_rgba8(),
+            Err(err) => {
+                eprintln!(
+                    "Encountered error while opening image at path {}: {}",
+                    path.display()
+                        .if_supports_color(owo_colors::Stream::Stderr, |text| text.blue()),
+                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+                );
+                std::process::exit(127)
             }
         };
+        let filename = path.file_stem().unwrap_or(&OsStr::new("image"));
+        const CHUNK: usize = 4;
+        // Convert image to LAB representation
+        let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
+        image
+            .par_chunks_exact(CHUNK)
+            .map(|pixel| {
+                let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
+                Lab::from(pixel)
+            })
+            .collect_into_vec(&mut lab);
+        // Apply palettes to image
+        lab.par_iter()
+            .zip_eq(image.par_chunks_exact_mut(CHUNK))
+            .for_each(|(&lab, bytes)| {
+                let new_rgb = lab.to_nearest_palette(&palettes).to_rgb();
+                bytes[..3].copy_from_slice(&new_rgb);
+            });
 
-    println!("Output file name: {}", output_file_name);
-    println!("Converting image... (this may take a while)");
-
-    let start = std::time::Instant::now();
-
-    let palette_lab = dipc::convert_palette_to_labs(&palette_variations);
-    let labs_image: Vec<dipc::Lab> = dipc::rgba_pixels_to_labs(&image);
-    let converted_image: Vec<u8> = labs_image
-        .par_iter()
-        .map(|lab| dipc::convert_lab_to_palette(lab, &palette_lab))
-        .flatten()
-        .collect();
-
-    match image::save_buffer_with_format(
-        &output_file_name,
-        &converted_image,
-        image.width(),
-        image.height(),
-        image::ColorType::Rgba8,
-        image::ImageFormat::Png,
-        ) {
-        Ok(_) => println!("Image converted successfully."),
-        Err(e) => eprintln!("Error converting image: {}", e),
+        let mut new_name = filename.to_os_string();
+        new_name.push("-");
+        new_name.push(&name);
+        new_name.push(".png");
+        output.push(new_name);
+        match image.save_with_format(&output, image::ImageFormat::Png) {
+            Ok(_) => {}
+            Err(err) => {
+                eprintln!(
+                    "Encountered error while trying to save image `{}`: {}",
+                    path.display()
+                        .if_supports_color(owo_colors::Stream::Stderr, |text| text.blue()),
+                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+                );
+                std::process::exit(127)
+            }
+        };
+        output.pop();
     }
-
-    let duration = start.elapsed().as_secs_f32();
-    println!("Conversion took {} seconds.", duration);
+    Ok(())
 }
