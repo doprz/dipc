@@ -19,12 +19,10 @@ pub fn parse_palette(
                 let Value::Object(map) = val else {
                     return Err(format!("Failed to parse palette style `{style}`: It's value is not a JSON object"))
                 };
-                out.push({
-                    let mut palette = Palette::try_from(map)
-                        .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
-                    palette.name = Some(style);
-                    palette
-                });
+                let mut palette = Palette::try_from(map)
+                    .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
+                palette.name = Some(style);
+                out.push(palette);
             }
             Ok(out)
         }
@@ -35,12 +33,10 @@ pub fn parse_palette(
                 let Some(Value::Object(map)) = json.remove(&style) else {
                     return Err(format!("Failed to parse palette style `{style}`: It does not exist in the theme JSON source"))
                 };
-                out.push({
-                    let mut palette = Palette::try_from(map)
-                        .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
-                    palette.name = Some(style);
-                    palette
-                });
+                let mut palette = Palette::try_from(map)
+                    .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
+                palette.name = Some(style);
+                out.push(palette);
             }
             Ok(out)
         }
@@ -75,7 +71,11 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                         ));
                     }
                     let channel_length = color.len() / 3;
-                    let multiplier = 17 - (channel_length - 1) as u8 * 16;
+                    let multiplier = match channel_length {
+                        1 => 16,
+                        2 => 1,
+                        _ => unreachable!(),
+                    };
                     for channel in 0..3 {
                         let start = channel * channel_length;
                         let Some(channelstr) = color.get(start..start + channel_length) else {

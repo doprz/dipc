@@ -89,7 +89,6 @@ And writing results to {output:?}"
         }
     };
     // Print palettes
-    //
     let color = supports_color::on_cached(supports_color::Stream::Stdout)
         .is_some_and(|level| level.has_16m);
     let max_name = palettes
@@ -157,7 +156,7 @@ And writing results to {output:?}"
         let filename = path.file_stem().unwrap_or(&OsStr::new("image"));
         const CHUNK: usize = 4;
         // Convert image to LAB representation
-        let mut lab = Vec::with_capacity(image.as_raw().len() / 4);
+        let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
         image
             .par_chunks_exact(CHUNK)
             .map(|pixel| {
