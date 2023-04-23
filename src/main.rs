@@ -4,7 +4,7 @@ use std::{
 };
 
 use clap::Parser;
-use cli::ColorPallete;
+use cli::ColorPalette;
 use delta::Lab;
 use owo_colors::{OwoColorize, Style};
 use rayon::{
@@ -14,17 +14,17 @@ use rayon::{
     slice::{ParallelSlice, ParallelSliceMut},
 };
 
-use crate::{cli::Cli, config::parse_pallete};
+use crate::{cli::Cli, config::parse_palette};
 
 mod cli;
 mod config;
 mod delta;
-mod palletes;
+mod palettes;
 
 fn main() -> io::Result<()> {
     let cli = Cli::parse();
     let Cli {
-        color_pallete,
+        color_palette,
         styles,
         mut output,
         process,
@@ -62,7 +62,7 @@ fn main() -> io::Result<()> {
         writeln!(
             writer,
             "\
-Using color pallete: {color_pallete:?}
+Using color palette: {color_palette:?}
 With styles: {styles:?}"
         )?;
     }
@@ -75,13 +75,13 @@ And writing results to {output:?}"
         )?;
     };
     let mut name = {
-        if !matches!(color_pallete, ColorPallete::RawJSON { .. }) {
-            format!("{color_pallete:?}")
+        if !matches!(color_palette, ColorPalette::RawJSON { .. }) {
+            format!("{color_palette:?}")
         } else {
             String::new()
         }
     };
-    let palletes = match parse_pallete(color_pallete.get_json(), styles) {
+    let palettes = match parse_palette(color_palette.get_json(), styles) {
         Ok(p) => p,
         Err(err) => {
             eprintln!(
@@ -91,9 +91,9 @@ And writing results to {output:?}"
             std::process::exit(127)
         }
     };
-    // Print palletes
-    for pallete in &palletes {
-        if let Some(name) = &pallete.name {
+    // Print palettes
+    for palette in &palettes {
+        if let Some(name) = &palette.name {
             writeln!(
                 writer,
                 "{:<10} - {} colors",
@@ -101,7 +101,7 @@ And writing results to {output:?}"
                     let style = Style::new().bold().bright_white();
                     text.style(style)
                 }),
-                pallete.colors.len()
+                palette.colors.len()
             )?;
         }
         const WIDTH: usize = 60;
@@ -110,7 +110,7 @@ And writing results to {output:?}"
             None => {}
             Some(level) => {
                 if level.has_16m {
-                    for (name, color) in &pallete.colors {
+                    for (name, color) in &palette.colors {
                         let [r, g, b] = color.0;
                         let sum = r as u16 + g as u16 + b as u16;
                         let (fgr, fgg, fgb) = if sum > 128 * 3 {
@@ -142,16 +142,16 @@ And writing results to {output:?}"
         }
     }
     writer.flush()?;
-    palletes.iter().for_each(|p| {
+    palettes.iter().for_each(|p| {
         p.name.as_ref().map(|n| {
             name.push('-');
             name.push_str(n)
         });
     });
-    let palletes: Vec<_> = palletes
+    let palettes: Vec<_> = palettes
         .into_par_iter()
-        .flat_map_iter(|pallete| {
-            pallete
+        .flat_map_iter(|palette| {
+            palette
                 .colors
                 .into_iter()
                 .map(|(_name, color)| Lab::from(color.0))
@@ -182,12 +182,12 @@ And writing results to {output:?}"
                 Lab::from(pixel)
             })
             .collect_into_vec(&mut lab);
-        // Apply palletes to image
-        // let (name, colors) = pallete;
+        // Apply palettes to image
+        // let (name, colors) = palette;
         lab.par_iter()
             .zip_eq(image.par_chunks_exact_mut(CHUNK))
             .for_each(|(&lab, bytes)| {
-                let new_rgb = lab.to_nearest_pallete(&palletes).to_rgb();
+                let new_rgb = lab.to_nearest_palette(&palettes).to_rgb();
                 bytes[..3].copy_from_slice(&new_rgb);
             });
 

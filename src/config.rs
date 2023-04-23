@@ -1,45 +1,45 @@
 use image::Rgb;
 use serde_json::Value;
 
-use crate::cli::ColorPalleteStyles;
+use crate::cli::ColorPaletteStyles;
 
-pub fn parse_pallete(
+pub fn parse_palette(
     json: serde_json::Map<String, Value>,
-    styles: ColorPalleteStyles,
-) -> Result<Vec<Pallete>, String> {
+    styles: ColorPaletteStyles,
+) -> Result<Vec<Palette>, String> {
     match styles {
-        ColorPalleteStyles::None => {
+        ColorPaletteStyles::None => {
             // Flat theme
-            Ok(vec![Pallete::try_from(json)?])
+            Ok(vec![Palette::try_from(json)?])
         }
-        ColorPalleteStyles::All => {
+        ColorPaletteStyles::All => {
             // Parse all styles
             let mut out = Vec::with_capacity(json.len());
             for (style, val) in json {
                 let Value::Object(map) = val else {
-                    return Err(format!("Failed to parse pallete style `{style}`: It's value is not a JSON object"))
+                    return Err(format!("Failed to parse palette style `{style}`: It's value is not a JSON object"))
                 };
                 out.push({
-                    let mut pallete = Pallete::try_from(map)
-                        .map_err(|err| format!("Failed to parse pallete style `{style}`: {err}"))?;
-                    pallete.name = Some(style);
-                    pallete
+                    let mut palette = Palette::try_from(map)
+                        .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
+                    palette.name = Some(style);
+                    palette
                 });
             }
             Ok(out)
         }
-        ColorPalleteStyles::Some { styles } => {
+        ColorPaletteStyles::Some { styles } => {
             let mut json = json;
             let mut out = Vec::with_capacity(styles.len());
             for style in styles {
                 let Some(Value::Object(map)) = json.remove(&style) else {
-                    return Err(format!("Failed to parse pallete style `{style}`: It does not exist in the theme JSON source"))
+                    return Err(format!("Failed to parse palette style `{style}`: It does not exist in the theme JSON source"))
                 };
                 out.push({
-                    let mut pallete = Pallete::try_from(map)
-                        .map_err(|err| format!("Failed to parse pallete style `{style}`: {err}"))?;
-                    pallete.name = Some(style);
-                    pallete
+                    let mut palette = Palette::try_from(map)
+                        .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
+                    palette.name = Some(style);
+                    palette
                 });
             }
             Ok(out)
@@ -48,12 +48,12 @@ pub fn parse_pallete(
 }
 
 #[derive(Debug, Clone)]
-pub struct Pallete {
+pub struct Palette {
     pub name: Option<String>,
     pub colors: Vec<(String, Rgb<u8>)>,
 }
 
-impl TryFrom<serde_json::Map<String, Value>> for Pallete {
+impl TryFrom<serde_json::Map<String, Value>> for Palette {
     type Error = String;
 
     fn try_from(json: serde_json::Map<String, Value>) -> Result<Self, Self::Error> {
@@ -128,6 +128,6 @@ impl TryFrom<serde_json::Map<String, Value>> for Pallete {
             };
             colors.push((name, Rgb(colorarr)))
         }
-        Ok(Pallete { colors, name: None })
+        Ok(Palette { colors, name: None })
     }
 }
