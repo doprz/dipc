@@ -22,6 +22,12 @@ impl ColorPallete {
             ColorPallete::Gruvbox => {
                 serde_json::from_str(include_str!("./palettes/gruvbox.json")).unwrap()
             }
+            ColorPallete::Edge => {
+                serde_json::from_str(include_str!("./palettes/edge.json")).unwrap()
+            }
+            ColorPallete::TokyoNight => {
+                serde_json::from_str(include_str!("./palettes/tokyo-night.json")).unwrap()
+            }
             ColorPallete::RawJSON { map } => return map,
             // _ => todo!(),
         };

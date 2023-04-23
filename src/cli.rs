@@ -83,6 +83,8 @@ pub enum ColorPallete {
     Nord,
     RosePine,
     Catppucin,
+    Edge,
+    TokyoNight,
 }
 
 impl FromStr for ColorPallete {
@@ -106,6 +108,8 @@ impl FromStr for ColorPallete {
             }
             "nord" => ColorPallete::Nord,
             "rosepine" | "rose-pine" | "rose_pine" => ColorPallete::RosePine,
+            "edge" => ColorPallete::Edge,
+            "tokyonight" | "tokyo_night" | "tokyo-night" => ColorPallete::TokyoNight,
             // The color pallete seems to be the path to an external file
             external => {
                 let external: PathBuf = external.into();
