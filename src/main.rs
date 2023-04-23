@@ -45,15 +45,12 @@ fn main() -> io::Result<()> {
                 .display()
                 .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
         );
-        match std::fs::create_dir_all(&output) {
-            Ok(()) => {}
-            Err(err) => {
-                eprintln!(
-                    "Creating provided output directory failed with error: {}",
-                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
-                );
-                std::process::exit(127)
-            }
+        if let Err(err) = std::fs::create_dir_all(&output) {
+            eprintln!(
+                "Creating provided output directory failed with error: {}",
+                err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+            );
+            std::process::exit(127)
         };
     }
     let stdout = stdout().lock();
@@ -92,52 +89,38 @@ And writing results to {output:?}"
         }
     };
     // Print palettes
+    //
+    let color = supports_color::on_cached(supports_color::Stream::Stdout)
+        .is_some_and(|level| level.has_16m);
+    let max_name = palettes
+        .iter()
+        .map(|p| p.name.as_ref().map(|n| n.len()).unwrap_or_default())
+        .max()
+        .unwrap_or_default();
     for palette in &palettes {
         if let Some(name) = &palette.name {
             writeln!(
                 writer,
-                "{:<10} - {} colors",
+                "{:<max_name$} - {} colors{}",
                 name.if_supports_color(owo_colors::Stream::Stdout, |text| {
                     let style = Style::new().bold().bright_white();
                     text.style(style)
                 }),
-                palette.colors.len()
+                palette.colors.len(),
+                if color { ":" } else { "" }
             )?;
         }
-        const WIDTH: usize = 60;
-        let mut x = 0;
-        match supports_color::on_cached(supports_color::Stream::Stdout) {
-            None => {}
-            Some(level) => {
-                if level.has_16m {
-                    for (name, color) in &palette.colors {
-                        let [r, g, b] = color.0;
-                        let sum = r as u16 + g as u16 + b as u16;
-                        let (fgr, fgg, fgb) = if sum > 128 * 3 {
-                            (0, 0, 0)
-                        } else {
-                            (255, 255, 255)
-                        };
-                        x += name.len() + 1;
-                        write!(
-                            writer,
-                            "{}{} ",
-                            {
-                                if x > WIDTH {
-                                    x = 0;
-                                    "\n"
-                                } else {
-                                    ""
-                                }
-                            },
-                            name.on_truecolor(color.0[0], color.0[1], color.0[2])
-                                .truecolor(fgr, fgg, fgb)
-                        )?;
-                    }
+        const WIDTH: usize = 8;
+        let mut idx = 0;
+        if color {
+            for (_, color) in &palette.colors {
+                let [r, g, b] = color.0;
+                write!(writer, "{}", "  ".on_truecolor(r, g, b))?;
+                if idx % WIDTH == WIDTH - 1 {
+                    writeln!(writer)?;
                 }
+                idx += 1;
             }
-        }
-        if x != 0 {
             writeln!(writer)?;
         }
     }
@@ -183,7 +166,6 @@ And writing results to {output:?}"
             })
             .collect_into_vec(&mut lab);
         // Apply palettes to image
-        // let (name, colors) = palette;
         lab.par_iter()
             .zip_eq(image.par_chunks_exact_mut(CHUNK))
             .for_each(|(&lab, bytes)| {

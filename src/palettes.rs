@@ -5,8 +5,9 @@ use crate::cli::ColorPalette;
 impl ColorPalette {
     pub fn get_json(self) -> serde_json::Map<String, Value> {
         let colors = match self {
-            #[rustfmt::skip]
-            ColorPalette::Nord => serde_json::from_str(include_str!("./palettes/nord.json")).unwrap(),
+            ColorPalette::Nord => {
+                serde_json::from_str(include_str!("./palettes/nord.json")).unwrap()
+            }
             ColorPalette::RosePine => {
                 serde_json::from_str(include_str!("./palettes/rose-pine.json")).unwrap()
             }
@@ -29,7 +30,6 @@ impl ColorPalette {
                 serde_json::from_str(include_str!("./palettes/tokyo-night.json")).unwrap()
             }
             ColorPalette::RawJSON { map } => return map,
-            // _ => todo!(),
         };
         let Value::Object(obj) = colors else {
             panic!("An included theme appears to not be a JSON object?")
