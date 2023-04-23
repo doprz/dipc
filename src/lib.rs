@@ -12,6 +12,7 @@ pub enum ColorPalette {
     GruvboxMaterial,
     Nord,
     RosePine,
+    TokyoNight,
 }
 
 impl std::fmt::Display for ColorPalette {
@@ -23,6 +24,7 @@ impl std::fmt::Display for ColorPalette {
             ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
             ColorPalette::Nord => write!(f, "nord"),
             ColorPalette::RosePine => write!(f, "rose-pine"),
+            ColorPalette::TokyoNight => write!(f, "tokyo-night"),
         }
     }
 }
@@ -276,6 +278,12 @@ pub fn init_color_palettes() -> HashMap<String, HashMap<String, Vec<(String, u32
         serde_json::from_str(include_str!("palettes/rose-pine.json")).unwrap();
     let color_palette = parse_color_palette(&json_color_palette).unwrap();
     color_palettes.insert("rose-pine".to_string(), color_palette);
+
+    // tokyo-night
+    let json_color_palette: serde_json::Value =
+        serde_json::from_str(include_str!("palettes/tokyo-night.json")).unwrap();
+    let color_palette = parse_color_palette(&json_color_palette).unwrap();
+    color_palettes.insert("tokyo-night".to_string(), color_palette);
 
     color_palettes
 }

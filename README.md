@@ -14,6 +14,7 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 - gruvbox-material
 - nord
 - rose-pine
+- tokyo-night
 
 ## Examples
 
