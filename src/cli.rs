@@ -13,18 +13,24 @@ pub struct Cli {
     /// Builtin themes:
     ///
     /// - catppuccin
+    /// - edge
     /// - everforest
     /// - gruvbox
     /// - gruvbox_material
     /// - nord
     /// - rosepine
+    /// - tokyonight
     pub color_palette: ColorPalette,
 
-    /// The variations of the theme to generate images for.
-    /// Possible values: `all` to generate an image for each of the variations, `none` if you are
-    /// using a flat theme without variations, or a comma-delimited list of the names of variations
+    /// The styles of the theme to generate images for.
+    /// Run with --help to see possible values
+    ///
+    ///
+    /// Possible values: `all` to generate an image for each of the styles, `none` if you are
+    /// using a flat theme without designated styles, or a comma-delimited list of the names of the
+    /// styles to use
     /// it should use
-    #[arg(short, long, value_name = "VARIATIONS", default_value = "all")]
+    #[arg(short, long, value_name = "STYLES", default_value = "all")]
     pub styles: ColorPaletteStyles,
 
     /// Verbose mode (-v, -vv, -vvv)
@@ -51,7 +57,7 @@ impl FromStr for ColorPaletteStyles {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let variation = match s {
+        let style = match s {
             "all" | "ALL" => Self::All,
             "none" | "NONE" | "no" | "NO" => Self::None,
             some => Self::Some {
@@ -59,18 +65,18 @@ impl FromStr for ColorPaletteStyles {
                     let mut vars = Vec::new();
                     for var in some.split(',') {
                         if var.is_empty() {
-                            return Err("One of the variations seems to be an empty string. Do you have a double comma in your variations list(-v)?".to_string());
+                            return Err("One of the styles seems to be an empty string. Do you have a double comma in your styles list(-v)?".to_string());
                         };
                         vars.push(var.to_string())
                     }
                     if vars.is_empty() {
-                        return Err("No variations selected".to_string());
+                        return Err("No styles selected".to_string());
                     };
                     vars
                 },
             },
         };
-        Ok(variation)
+        Ok(style)
     }
 }
 
