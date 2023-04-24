@@ -6,42 +6,48 @@ use serde_json::Value;
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
-    /// The color palette to use. The name of a builtin theme, or the path to a theme in JSON
-    /// or a JSON string with the theme(starting with `JSON: {}`). Run with --help instead of -h
-    /// for a list of all builtin themes
+    // Options
+    /// The color palette variation(s) to use
+    /// Run with --help instead of -h for a list of all possible values
     ///
-    /// Builtin themes:
-    ///
-    /// - catppuccin
-    /// - edge
-    /// - everforest
-    /// - gruvbox
-    /// - gruvbox_material
-    /// - nord
-    /// - rosepine
-    /// - tokyonight
-    pub color_palette: ColorPalette,
-
-    /// The styles of the theme to generate images for.
-    /// Run with --help to see possible values
-    ///
-    ///
-    /// Possible values: `all` to generate an image for each of the styles, `none` if you are
-    /// using a flat theme without designated styles, or a comma-delimited list of the names of the
-    /// styles to use
-    /// it should use
-    #[arg(short, long, value_name = "STYLES", default_value = "all")]
+    /// Possible values:
+    /// - `all` to generate an image for each of the variations
+    /// - `none` if you are using a flat theme without variations
+    /// - or a comma-delimited list of the names of variations it should use
+    #[arg(
+        short,
+        long,
+        value_name = "VARIATIONS",
+        default_value = "all",
+        verbatim_doc_comment
+    )]
     pub styles: ColorPaletteStyles,
-
-    /// Verbose mode (-v, -vv, -vvv)
-    #[arg(short, long, action = clap::ArgAction::Count)]
-    pub verbose: u8,
 
     /// Output directory
     #[arg(short, long, value_name = "PATH", default_value = "output")]
     pub output: PathBuf,
 
-    /// The image to process
+    /// Verbose mode (-v, -vv, -vvv)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    pub verbose: u8,
+
+    // Arguments
+    /// The color palette to use, name of a builtin theme, path to a theme in JSON, or a JSON string with the theme (starting with `JSON: {}`)
+    /// Run with --help instead of -h for a list of all builtin themes
+    ///
+    /// Builtin themes:
+    /// - catppuccin
+    /// - edge
+    /// - everforest
+    /// - gruvbox
+    /// - gruvbox-material
+    /// - nord
+    /// - rose-pine
+    /// - tokyo-night
+    #[arg(value_name = "PALETTE", verbatim_doc_comment)]
+    pub color_palette: ColorPalette,
+
+    /// The image(s) to process
     #[arg(value_name = "FILE")]
     pub process: Vec<PathBuf>,
 }
@@ -65,7 +71,7 @@ impl FromStr for ColorPaletteStyles {
                     let mut vars = Vec::new();
                     for var in some.split(',') {
                         if var.is_empty() {
-                            return Err("One of the styles seems to be an empty string. Do you have a double comma in your styles list(-v)?".to_string());
+                            return Err("One of the variations seems to be an empty string. Do you have a double comma in your variations list (-v)?".to_string());
                         };
                         vars.push(var.to_string())
                     }
@@ -83,14 +89,32 @@ impl FromStr for ColorPaletteStyles {
 #[derive(Clone, Debug)]
 pub enum ColorPalette {
     RawJSON { map: serde_json::Map<String, Value> },
+    Catppuccin,
+    Edge,
     Everforest,
     Gruvbox,
     GruvboxMaterial,
     Nord,
     RosePine,
-    Catppucin,
-    Edge,
     TokyoNight,
+}
+
+impl std::fmt::Display for ColorPalette {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ColorPalette::RawJSON { map } => {
+                write!(f, "JSON: {}", serde_json::to_string(map).unwrap())
+            }
+            ColorPalette::Catppuccin => write!(f, "catppuccin"),
+            ColorPalette::Edge => write!(f, "edge"),
+            ColorPalette::Everforest => write!(f, "everforest"),
+            ColorPalette::Gruvbox => write!(f, "gruvbox"),
+            ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
+            ColorPalette::Nord => write!(f, "nord"),
+            ColorPalette::RosePine => write!(f, "rose-pine"),
+            ColorPalette::TokyoNight => write!(f, "tokyo-night"),
+        }
+    }
 }
 
 impl FromStr for ColorPalette {
@@ -106,16 +130,17 @@ impl FromStr for ColorPalette {
             return Ok(ColorPalette::RawJSON { map });
         };
         let palette = match s {
-            "catppuccin" | "catpucin" | "catppucin" | "catpuccin" => ColorPalette::Catppucin,
+            "catppuccin" => ColorPalette::Catppuccin,
+            "edge" => ColorPalette::Edge,
             "everforest" => ColorPalette::Everforest,
             "gruvbox" => ColorPalette::Gruvbox,
-            "gruvbox_material" | "gruvbox-material" | "gruvboxmaterial" => {
+            "gruvbox-material" | "gruvbox_material" | "gruvboxmaterial" => {
                 ColorPalette::GruvboxMaterial
             }
             "nord" => ColorPalette::Nord,
-            "rosepine" | "rose-pine" | "rose_pine" => ColorPalette::RosePine,
-            "edge" => ColorPalette::Edge,
-            "tokyonight" | "tokyo_night" | "tokyo-night" => ColorPalette::TokyoNight,
+            "rose-pine" | "rose_pine" | "rosepine" => ColorPalette::RosePine,
+            "tokyo-night" | "tokyo_night" | "tokyonight" => ColorPalette::TokyoNight,
+
             // The color palette seems to be the path to an external file
             external => {
                 let external: PathBuf = external.into();

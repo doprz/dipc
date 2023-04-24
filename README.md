@@ -21,8 +21,8 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 
 | Original | Converted |
 | -------- | --------- |
-| ![Magic view of the Gosausee in the Austrian Alps](images/ivan-rohovchenko-pkLBb75JnHc-unsplash.jpg) | ![Magic view of the Gosausee in the Austrian Alps_nord](images/ivan-rohovchenko-pkLBb75JnHc-unsplash_nord-Polar%20Night-Snow%20Storm-Frost.png) |
-| ![Human vs Nature](images/victor-rosario-pa9sROVpkgQ-unsplash.jpg) | ![Human vs Nature_gruvbox](images/victor-rosario-pa9sROVpkgQ-unsplash_gruvbox-Dark%20mode-Light%20mode.png) |
+| ![Magic view of the Gosausee in the Austrian Alps](images/ivan-rohovchenko-pkLBb75JnHc-unsplash.jpg) | ![Magic view of the Gosausee in the Austrian Alps_nord](images/ivan-rohovchenko-pkLBb75JnHc-unsplash_nord-Polar-Night-Snow-Storm-Frost.png) |
+| ![Human vs Nature](images/victor-rosario-pa9sROVpkgQ-unsplash.jpg) | ![Human vs Nature_gruvbox](images/victor-rosario-pa9sROVpkgQ-unsplash_gruvbox-Dark-mode-Light-mode.png) |
 
 ### Image Credits
 
