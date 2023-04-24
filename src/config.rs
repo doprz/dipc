@@ -1,11 +1,13 @@
+use std::path::PathBuf;
+
 use image::Rgb;
 use serde_json::Value;
 
-use crate::cli::ColorPaletteStyles;
+use crate::cli::{ColorPalette, ColorPaletteStyles};
 
 pub fn parse_palette(
     json: serde_json::Map<String, Value>,
-    styles: ColorPaletteStyles,
+    styles: &ColorPaletteStyles,
 ) -> Result<Vec<Palette>, String> {
     match styles {
         ColorPaletteStyles::None => {
@@ -30,12 +32,12 @@ pub fn parse_palette(
             let mut json = json;
             let mut out = Vec::with_capacity(styles.len());
             for style in styles {
-                let Some(Value::Object(map)) = json.remove(&style) else {
+                let Some(Value::Object(map)) = json.remove(style) else {
                     return Err(format!("Failed to parse palette style `{style}`: It does not exist in the theme JSON source"))
                 };
                 let mut palette = Palette::try_from(map)
                     .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
-                palette.name = Some(style);
+                palette.name = Some(style.to_string());
                 out.push(palette);
             }
             Ok(out)
@@ -58,7 +60,7 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
             let mut colorarr: [u8; 3] = [0_u8; 3];
             match value {
                 Value::String(hex) => {
-                    // For representing a color as a hex string `#ff8800` in JSON
+                    // For representing a color as a hex string `#FF8800` in JSON
                     if !hex.starts_with('#') {
                         return Err(format!(
                             "Encountered a color string not in the `#HEX` format: `{hex}`"
@@ -92,7 +94,7 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                     }
                 }
                 Value::Array(arr) => {
-                    // For representing a color as `[128,255,0]` in JSON
+                    // For representing a color as `[128, 255, 0]` in JSON
                     if arr.len() != 3 {
                         return Err(format!(
                             "Encountered a color array with {} elements instead of 3: {arr:?}",
@@ -130,4 +132,38 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
         }
         Ok(Palette { colors, name: None })
     }
+}
+
+pub fn output_file_name(
+    input_file_path: &PathBuf,
+    color_palette: &ColorPalette,
+    color_palette_variations: &[Palette],
+) -> String {
+    let file_stem = match input_file_path.file_stem() {
+        Some(stem) => match stem.to_str() {
+            Some(stem) => stem,
+            None => "image",
+        },
+        None => "image",
+    };
+
+    let color_palette = match &color_palette {
+        ColorPalette::RawJSON { .. } => String::new(),
+        _ => format!("{}", color_palette),
+    };
+
+    let mut output_file_name = String::new();
+
+    output_file_name.push_str(file_stem);
+    output_file_name.push_str(format!("_{}", color_palette).as_str());
+
+    color_palette_variations.iter().for_each(|variation| {
+        if let Some(name) = &variation.name {
+            output_file_name.push_str(format!("-{}", name).as_str());
+        }
+    });
+
+    output_file_name.push_str(".png");
+
+    output_file_name
 }
