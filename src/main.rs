@@ -8,10 +8,8 @@ use cli::ColorPalette;
 use delta::Lab;
 use owo_colors::{OwoColorize, Style};
 use rayon::{
-    prelude::{
-        IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
-    },
-    slice::{ParallelSlice, ParallelSliceMut},
+    prelude::{IntoParallelIterator, ParallelIterator},
+    slice::ParallelSliceMut,
 };
 
 use crate::{cli::Cli, config::parse_palette};
@@ -78,7 +76,7 @@ And writing results to {output:?}"
             String::new()
         }
     };
-    let palettes = match parse_palette(color_palette.get_json(), styles) {
+    let mut palettes = match parse_palette(color_palette.get_json(), styles) {
         Ok(p) => p,
         Err(err) => {
             eprintln!(
@@ -89,8 +87,7 @@ And writing results to {output:?}"
         }
     };
     // Print palettes
-    let color = supports_color::on_cached(supports_color::Stream::Stdout)
-        .is_some_and(|level| level.has_16m);
+    let color = matches!(supports_color::on_cached(supports_color::Stream::Stdout), Some(level) if level.has_16m);
     let max_name = palettes
         .iter()
         .map(|p| p.name.as_ref().map(|n| n.len()).unwrap_or_default())
@@ -122,6 +119,11 @@ And writing results to {output:?}"
             }
             writeln!(writer)?;
         }
+    }
+    // Remove duplicate colors
+    for palette in &mut palettes {
+        palette.colors.sort_by_key(|(_name, color)| color.0);
+        palette.colors.dedup_by_key(|(_name, color)| color.0)
     }
     writer.flush()?;
     palettes.iter().for_each(|p| {
@@ -156,21 +158,24 @@ And writing results to {output:?}"
         let filename = path.file_stem().unwrap_or(&OsStr::new("image"));
         const CHUNK: usize = 4;
         // Convert image to LAB representation
-        let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
-        image
-            .par_chunks_exact(CHUNK)
-            .map(|pixel| {
-                let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
-                Lab::from(pixel)
-            })
-            .collect_into_vec(&mut lab);
+        // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
+        // image
+        //     .par_chunks_exact(CHUNK)
+        //     .map(|pixel| {
+        //         let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
+        //         Lab::from(pixel)
+        //     })
+        //     .collect_into_vec(&mut lab);
+        //
+        // LAB conversion moved into palette
+        //
         // Apply palettes to image
-        lab.par_iter()
-            .zip_eq(image.par_chunks_exact_mut(CHUNK))
-            .for_each(|(&lab, bytes)| {
-                let new_rgb = lab.to_nearest_palette(&palettes).to_rgb();
-                bytes[..3].copy_from_slice(&new_rgb);
-            });
+        image.par_chunks_exact_mut(CHUNK).for_each(|bytes| {
+            let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
+            let lab = Lab::from(pixel);
+            let new_rgb = lab.to_nearest_palette(&palettes).to_rgb();
+            bytes[..3].copy_from_slice(&new_rgb);
+        });
 
         let mut new_name = filename.to_os_string();
         new_name.push("-");
