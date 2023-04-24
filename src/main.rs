@@ -4,10 +4,8 @@ use clap::Parser;
 use delta::Lab;
 use owo_colors::{OwoColorize, Style};
 use rayon::{
-    prelude::{
-        IndexedParallelIterator, IntoParallelIterator, IntoParallelRefIterator, ParallelIterator,
-    },
-    slice::{ParallelSlice, ParallelSliceMut},
+    prelude::{IntoParallelIterator, ParallelIterator},
+    slice::ParallelSliceMut,
 };
 
 use crate::{
@@ -106,6 +104,11 @@ fn main() -> io::Result<()> {
             writeln!(writer)?;
         }
     }
+    // Remove duplicate colors
+    for palette in &mut palettes {
+        palette.colors.sort_by_key(|(_name, color)| color.0);
+        palette.colors.dedup_by_key(|(_name, color)| color.0)
+    }
     writer.flush()?;
 
     let palettes_lab: Vec<_> = palettes
@@ -141,21 +144,24 @@ fn main() -> io::Result<()> {
 
         const CHUNK: usize = 4;
         // Convert image to LAB representation
-        let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
-        image
-            .par_chunks_exact(CHUNK)
-            .map(|pixel| {
-                let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
-                Lab::from(pixel)
-            })
-            .collect_into_vec(&mut lab);
+        // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
+        // image
+        //     .par_chunks_exact(CHUNK)
+        //     .map(|pixel| {
+        //         let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
+        //         Lab::from(pixel)
+        //     })
+        //     .collect_into_vec(&mut lab);
+        //
+        // LAB conversion moved into palette
+        //
         // Apply palettes to image
-        lab.par_iter()
-            .zip_eq(image.par_chunks_exact_mut(CHUNK))
-            .for_each(|(&lab, bytes)| {
-                let new_rgb = lab.to_nearest_palette(&palettes_lab).to_rgb();
-                bytes[..3].copy_from_slice(&new_rgb);
-            });
+        image.par_chunks_exact_mut(CHUNK).for_each(|bytes| {
+            let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
+            let lab = Lab::from(pixel);
+            let new_rgb = lab.to_nearest_palette(&palettes).to_rgb();
+            bytes[..3].copy_from_slice(&new_rgb);
+        });
 
         let output_file_name = output_file_name(&path, &cli.color_palette, &palettes);
         match image.save_with_format(&output_file_name, image::ImageFormat::Png) {

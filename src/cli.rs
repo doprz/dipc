@@ -78,7 +78,7 @@ impl FromStr for ColorPaletteStyles {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let variation = match s {
+        let style = match s {
             "all" | "ALL" => Self::All,
             "none" | "NONE" | "no" | "NO" => Self::None,
             some => Self::Some {
@@ -91,13 +91,13 @@ impl FromStr for ColorPaletteStyles {
                         vars.push(var.to_string())
                     }
                     if vars.is_empty() {
-                        return Err("No variations selected".to_string());
+                        return Err("No styles selected".to_string());
                     };
                     vars
                 },
             },
         };
-        Ok(variation)
+        Ok(style)
     }
 }
 
