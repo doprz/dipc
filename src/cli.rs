@@ -32,8 +32,24 @@ pub struct Cli {
     pub verbose: u8,
 
     // Arguments
-    #[command(flatten)]
-    pub color_palette: ColorPaletteArgGroup,
+    // TODO: tmp disabled
+    // #[command(flatten)]
+    // pub color_palette: ColorPaletteArgGroup,
+
+    /// The color palette to use, name of a builtin theme, path to a theme in JSON, or a JSON string with the theme (starting with `JSON: {}`)
+    /// Run with --help instead of -h for a list of all builtin themes
+    ///
+    /// Builtin themes:
+    /// - catppuccin
+    /// - edge
+    /// - everforest
+    /// - gruvbox
+    /// - gruvbox-material
+    /// - nord
+    /// - rose-pine
+    /// - tokyo-night
+    #[arg(value_name = "PALETTE", verbatim_doc_comment)]
+    pub color_palette: ColorPalette,
 
     /// The image(s) to process
     #[arg(value_name = "FILE")]
@@ -105,7 +121,7 @@ impl FromStr for ColorPaletteStyles {
 
 #[derive(Clone, Debug)]
 pub enum ColorPalette {
-    // RawJSON { map: serde_json::Map<String, Value> },
+    RawJSON { map: serde_json::Map<String, Value> },
     Catppuccin,
     Edge,
     Everforest,
@@ -121,9 +137,9 @@ pub enum ColorPalette {
 impl std::fmt::Display for ColorPalette {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            // ColorPalette::RawJSON { map } => {
-            //     write!(f, "JSON: {}", serde_json::to_string(map).unwrap())
-            // }
+            ColorPalette::RawJSON { map } => {
+                write!(f, "JSON: {}", serde_json::to_string(map).unwrap())
+            }
             ColorPalette::Catppuccin => write!(f, "catppuccin"),
             ColorPalette::Edge => write!(f, "edge"),
             ColorPalette::Everforest => write!(f, "everforest"),
@@ -143,14 +159,14 @@ impl FromStr for ColorPalette {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // TODO
-        // if s.starts_with("JSON: ") {
-        //     let jsonstr = &s[5..];
-        //     let json: Value = serde_json::from_str(jsonstr).map_err(|err| err.to_string())?;
-        //     let Value::Object(map) = json else {
-        //         return Err(format!("Encountered error while parsing inline JSON string: the string appears to not be a JSON object"))
-        //     };
-        //     return Ok(ColorPalette::RawJSON { map });
-        // };
+        if s.starts_with("JSON: ") {
+            let jsonstr = &s[5..];
+            let json: Value = serde_json::from_str(jsonstr).map_err(|err| err.to_string())?;
+            let Value::Object(map) = json else {
+                return Err(format!("Encountered error while parsing inline JSON string: the string appears to not be a JSON object"))
+            };
+            return Ok(ColorPalette::RawJSON { map });
+        };
         let palette = match s {
             "catppuccin" => ColorPalette::Catppuccin,
             "edge" => ColorPalette::Edge,
@@ -166,20 +182,20 @@ impl FromStr for ColorPalette {
             "tokyo-night" | "tokyo_night" | "tokyonight" => ColorPalette::TokyoNight,
             // TODO
             // The color palette seems to be the path to an external file
-            // external => {
-            //     let external: PathBuf = external.into();
-            //     if !external.is_file() {
-            //         return Err(format!("Theme source file `{s}` appears to not be a file."));
-            //     };
-            //     let file = File::open(external).map_err(|err| err.to_string())?;
-            //     let file = BufReader::new(file);
-            //     let json = serde_json::from_reader(file)
-            //         .map_err(|err| format!("Error while parsing JSON content of {s}: {err}"))?;
-            //     let Value::Object(map) = json else {
-            //     return Err(format!("Encountered error while parsing JSON theme file: the contents of the file are valid JSON but do not appear to be a JSON object"))
-            // };
-            //     ColorPalette::RawJSON { map }
-            // }
+            external => {
+                let external: PathBuf = external.into();
+                if !external.is_file() {
+                    return Err(format!("Theme source file `{s}` appears to not be a file."));
+                };
+                let file = File::open(external).map_err(|err| err.to_string())?;
+                let file = BufReader::new(file);
+                let json = serde_json::from_reader(file)
+                    .map_err(|err| format!("Error while parsing JSON content of {s}: {err}"))?;
+                let Value::Object(map) = json else {
+                return Err(format!("Encountered error while parsing JSON theme file: the contents of the file are valid JSON but do not appear to be a JSON object"))
+            };
+                ColorPalette::RawJSON { map }
+            }
         };
         Ok(palette)
     }

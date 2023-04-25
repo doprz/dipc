@@ -5,7 +5,7 @@ use crate::cli::ColorPalette;
 impl ColorPalette {
     pub fn get_json(self) -> serde_json::Map<String, Value> {
         let colors = match self {
-            // ColorPalette::RawJSON { map } => return map,
+            ColorPalette::RawJSON { map } => return map,
             ColorPalette::Catppuccin => serde_json::from_str(include_str!("./palettes/catppuccin.json")).unwrap(),
             ColorPalette::Edge => serde_json::from_str(include_str!("./palettes/edge.json")).unwrap(),
             ColorPalette::Everforest => serde_json::from_str(include_str!("./palettes/everforest.json")).unwrap(),
