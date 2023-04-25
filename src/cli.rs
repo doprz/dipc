@@ -55,6 +55,7 @@ struct ColorPaletteArgGroup {
     /// - nord
     /// - onedark
     /// - rose-pine
+    /// - solarized
     /// - tokyo-night
     #[arg(short, long, value_enum, verbatim_doc_comment)]
     pub color_palette: ColorPalette,
@@ -113,6 +114,7 @@ pub enum ColorPalette {
     Nord,
     OneDark,
     RosePine,
+    Solarized,
     TokyoNight,
 }
 
@@ -130,6 +132,7 @@ impl std::fmt::Display for ColorPalette {
             ColorPalette::Nord => write!(f, "nord"),
             ColorPalette::OneDark => write!(f, "onedark"),
             ColorPalette::RosePine => write!(f, "rose-pine"),
+            ColorPalette::Solarized => write!(f, "solarized"),
             ColorPalette::TokyoNight => write!(f, "tokyo-night"),
         }
     }
@@ -159,6 +162,7 @@ impl FromStr for ColorPalette {
             "nord" => ColorPalette::Nord,
             "onedark" | "one_dark" | "one-dark" => ColorPalette::OneDark,
             "rose-pine" | "rose_pine" | "rosepine" => ColorPalette::RosePine,
+            "solarized" => ColorPalette::Solarized,
             "tokyo-night" | "tokyo_night" | "tokyonight" => ColorPalette::TokyoNight,
             // TODO
             // The color palette seems to be the path to an external file

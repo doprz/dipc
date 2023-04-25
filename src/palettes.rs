@@ -14,6 +14,7 @@ impl ColorPalette {
             ColorPalette::Nord => serde_json::from_str(include_str!("./palettes/nord.json")).unwrap(),
             ColorPalette::OneDark => serde_json::from_str(include_str!("./palettes/onedark.json")).unwrap(),
             ColorPalette::RosePine => serde_json::from_str(include_str!("./palettes/rose-pine.json")).unwrap(),
+            ColorPalette::Solarized => serde_json::from_str(include_str!("./palettes/solarized.json")).unwrap(),
             ColorPalette::TokyoNight => serde_json::from_str(include_str!("./palettes/tokyo-night.json")).unwrap(),
         };
         let Value::Object(obj) = colors else {
