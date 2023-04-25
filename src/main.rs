@@ -57,7 +57,7 @@ fn main() -> io::Result<()> {
         // writeln!(writer, "Processing {:#?}\nWriting results to {:#?} directory", cli.process, cli.output)?;
         writeln!(writer, "Processing {:#?}", cli.process)?;
     }
-    let palettes = match parse_palette(cli.color_palette.clone().get_json(), &cli.styles) {
+    let mut palettes = match parse_palette(cli.color_palette.clone().get_json(), &cli.styles) {
         Ok(p) => p,
         Err(err) => {
             eprintln!(
@@ -159,7 +159,7 @@ fn main() -> io::Result<()> {
         image.par_chunks_exact_mut(CHUNK).for_each(|bytes| {
             let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
             let lab = Lab::from(pixel);
-            let new_rgb = lab.to_nearest_palette(&palettes).to_rgb();
+            let new_rgb = lab.to_nearest_palette(&palettes_lab).to_rgb();
             bytes[..3].copy_from_slice(&new_rgb);
         });
 
