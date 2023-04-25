@@ -53,6 +53,7 @@ struct ColorPaletteArgGroup {
     /// - gruvbox
     /// - gruvbox-material
     /// - nord
+    /// - onedark
     /// - rose-pine
     /// - tokyo-night
     #[arg(short, long, value_enum, verbatim_doc_comment)]
@@ -110,6 +111,7 @@ pub enum ColorPalette {
     Gruvbox,
     GruvboxMaterial,
     Nord,
+    OneDark,
     RosePine,
     TokyoNight,
 }
@@ -126,6 +128,7 @@ impl std::fmt::Display for ColorPalette {
             ColorPalette::Gruvbox => write!(f, "gruvbox"),
             ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
             ColorPalette::Nord => write!(f, "nord"),
+            ColorPalette::OneDark => write!(f, "onedark"),
             ColorPalette::RosePine => write!(f, "rose-pine"),
             ColorPalette::TokyoNight => write!(f, "tokyo-night"),
         }
@@ -154,6 +157,7 @@ impl FromStr for ColorPalette {
                 ColorPalette::GruvboxMaterial
             }
             "nord" => ColorPalette::Nord,
+            "onedark" | "one_dark" | "one-dark" => ColorPalette::OneDark,
             "rose-pine" | "rose_pine" | "rosepine" => ColorPalette::RosePine,
             "tokyo-night" | "tokyo_night" | "tokyonight" => ColorPalette::TokyoNight,
             // TODO
