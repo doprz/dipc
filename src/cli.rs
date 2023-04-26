@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader, path::PathBuf, str::FromStr};
 
-use clap::{Args, Parser};
+use clap::Parser;
 use serde_json::Value;
 
 #[derive(Parser, Debug)]
@@ -32,10 +32,6 @@ pub struct Cli {
     pub verbose: u8,
 
     // Arguments
-    // TODO: tmp disabled
-    // #[command(flatten)]
-    // pub color_palette: ColorPaletteArgGroup,
-
     /// The color palette to use, name of a builtin theme, path to a theme in JSON, or a JSON string with the theme (starting with `JSON: {}`)
     /// Run with --help instead of -h for a list of all builtin themes
     ///
@@ -54,35 +50,6 @@ pub struct Cli {
     /// The image(s) to process
     #[arg(value_name = "FILE")]
     pub process: Vec<PathBuf>,
-}
-
-#[derive(Args, Debug)]
-#[group(required = true, multiple = false)]
-struct ColorPaletteArgGroup {
-    /// The color palette to use
-    /// Run with --help instead of -h for a list of all builtin themes
-    ///
-    /// Builtin themes:
-    /// - catppuccin
-    /// - edge
-    /// - everforest
-    /// - gruvbox
-    /// - gruvbox-material
-    /// - nord
-    /// - onedark
-    /// - rose-pine
-    /// - solarized
-    /// - tokyo-night
-    #[arg(short, long, value_enum, verbatim_doc_comment)]
-    pub color_palette: ColorPalette,
-
-    /// The path to a JSON file with the color palette
-    #[arg(short, long)]
-    pub json_file: PathBuf,
-
-    /// A JSON string with the color palette (starting with `JSON: {}`)
-    #[arg(short, long)]
-    pub raw_json: String,
 }
 
 #[derive(Clone, Debug)]
@@ -158,7 +125,6 @@ impl FromStr for ColorPalette {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        // TODO
         if s.starts_with("JSON: ") {
             let jsonstr = &s[5..];
             let json: Value = serde_json::from_str(jsonstr).map_err(|err| err.to_string())?;
@@ -167,6 +133,7 @@ impl FromStr for ColorPalette {
             };
             return Ok(ColorPalette::RawJSON { map });
         };
+
         let palette = match s {
             "catppuccin" => ColorPalette::Catppuccin,
             "edge" => ColorPalette::Edge,
@@ -180,7 +147,7 @@ impl FromStr for ColorPalette {
             "rose-pine" | "rose_pine" | "rosepine" => ColorPalette::RosePine,
             "solarized" => ColorPalette::Solarized,
             "tokyo-night" | "tokyo_night" | "tokyonight" => ColorPalette::TokyoNight,
-            // TODO
+
             // The color palette seems to be the path to an external file
             external => {
                 let external: PathBuf = external.into();
