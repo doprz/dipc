@@ -28,35 +28,34 @@ fn main() -> io::Result<()> {
         );
         std::process::exit(127)
     };
-    // TODO: tmp disable
-    // if !cli.output.is_dir() {
-    //     eprintln!(
-    //         "Provided output `{}` does not appear to be a directory.\nAttempting to create it!",
-    //         cli.output
-    //             .display()
-    //             .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
-    //     );
-    //     if let Err(err) = std::fs::create_dir_all(&cli.output) {
-    //         eprintln!(
-    //             "Creating provided output directory failed with error: {}",
-    //             err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
-    //         );
-    //         std::process::exit(127)
-    //     };
-    // }
     let stdout = stdout().lock();
     let mut writer = BufWriter::new(stdout);
-    if cli.verbose >= 1 {
-        writeln!(
-            writer,
-            "Color palette: {}\nStyles: {:?}",
-            cli.color_palette, cli.styles
-        )?;
+
+    println!(
+        "Color palette: {}\nStyles: {:?}",
+        cli.color_palette, cli.styles
+    );
+    match &cli.output {
+        Some(path) if !path.is_dir() => {
+            eprintln!(
+                "Output directory \"{}\" does not exist.\nAttempting to create it.",
+                path.display()
+            );
+            if let Err(err) = std::fs::create_dir_all(path) {
+                eprintln!(
+                    "Creating provided output directory failed with error: {}",
+                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+                );
+                std::process::exit(127)
+            };
+        }
+        _ => {}
     }
-    if cli.verbose >= 2 {
-        // writeln!(writer, "Processing {:#?}\nWriting results to {:#?} directory", cli.process, cli.output)?;
-        writeln!(writer, "Processing {:#?}", cli.process)?;
+    if let Some(path) = &cli.output {
+        println!("Writing results to {:#?} directory.", path);
     }
+    println!("Processing {:#?}", &cli.process);
+
     let mut palettes = match parse_palette(cli.color_palette.clone().get_json(), &cli.styles) {
         Ok(p) => p,
         Err(err) => {
@@ -163,9 +162,21 @@ fn main() -> io::Result<()> {
             bytes[..3].copy_from_slice(&new_rgb);
         });
 
-        let output_file_name = output_file_name(&path, &cli.color_palette, &palettes);
+        let output_file_name = match &cli.output {
+            Some(path) => {
+                let mut output = path.clone();
+                output.push(output_file_name(&path, &cli.color_palette, &palettes));
+                output
+            }
+            None => {
+                let mut output = std::path::PathBuf::new();
+                output.push(output_file_name(&path, &cli.color_palette, &palettes));
+                output
+            }
+        };
+
         match image.save_with_format(&output_file_name, image::ImageFormat::Png) {
-            Ok(_) => println!("Saved image: {}", output_file_name),
+            Ok(_) => println!("Saved image: {}", output_file_name.display()),
             Err(err) => {
                 eprintln!(
                     "Encountered error while trying to save image {}: {}",

@@ -24,8 +24,8 @@ pub struct Cli {
     pub styles: ColorPaletteStyles,
 
     /// Output directory
-    #[arg(short, long, value_name = "PATH", default_value = "output")]
-    pub output: PathBuf,
+    #[arg(short, long, value_name = "PATH")]
+    pub output: Option<PathBuf>,
 
     /// Verbose mode (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count)]
