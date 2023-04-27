@@ -11,9 +11,9 @@ pub struct Cli {
     /// Run with --help instead of -h for a list of all possible values
     ///
     /// Possible values:
-    /// - `all` to generate an image for each of the variations
-    /// - `none` if you are using a flat theme without variations
-    /// - or a comma-delimited list of the names of variations it should use
+    ///     - `all` to generate an image for each of the variations
+    ///     - `none` if you are using a flat theme without variations
+    ///     - or a comma-delimited list of the names of variations it should use
     #[arg(
         short,
         long,
@@ -32,18 +32,23 @@ pub struct Cli {
     pub verbose: u8,
 
     // Arguments
-    /// The color palette to use, name of a builtin theme, path to a theme in JSON, or a JSON string with the theme (starting with `JSON: {}`)
+    /// The color palette to use:
+    ///     - name of a builtin theme
+    ///     - path to a theme in JSON
+    ///     - a JSON string with the theme (starting with `JSON: {}`)
     /// Run with --help instead of -h for a list of all builtin themes
     ///
     /// Builtin themes:
-    /// - catppuccin
-    /// - edge
-    /// - everforest
-    /// - gruvbox
-    /// - gruvbox-material
-    /// - nord
-    /// - rose-pine
-    /// - tokyo-night
+    ///     - catppuccin
+    ///     - edge
+    ///     - everforest
+    ///     - gruvbox
+    ///     - gruvbox-material
+    ///     - nord
+    ///     - onedark
+    ///     - rose-pine
+    ///     - solarized
+    ///     - tokyo-night
     #[arg(value_name = "PALETTE", verbatim_doc_comment)]
     pub color_palette: ColorPalette,
 
