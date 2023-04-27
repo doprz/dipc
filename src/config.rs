@@ -147,8 +147,8 @@ pub fn output_file_name(
         None => "image",
     };
 
-    let color_palette = match &color_palette {
-        ColorPalette::RawJSON { .. } => String::new(),
+    let color_palette: String = match &color_palette {
+        ColorPalette::RawJSON { .. } => String::from("custom"),
         _ => format!("{}", color_palette),
     };
 
@@ -159,7 +159,8 @@ pub fn output_file_name(
 
     color_palette_variations.iter().for_each(|variation| {
         if let Some(name) = &variation.name {
-            output_file_name.push_str(format!("-{}", name).as_str());
+            // output_file_name.push_str(format!("-{}", name).as_str());
+            output_file_name.push_str(format!("-{}", name.replace(" ", "_")).as_str());
         }
     });
 
