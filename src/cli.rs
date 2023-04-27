@@ -3,6 +3,8 @@ use std::{fs::File, io::BufReader, path::PathBuf, str::FromStr};
 use clap::Parser;
 use serde_json::Value;
 
+use crate::delta::CLIDEMethod;
+
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
@@ -30,6 +32,10 @@ pub struct Cli {
     /// Output directory name/path
     #[arg(short, long, value_name = "PATH")]
     pub dir_output: Option<PathBuf>,
+
+    /// CIELAB DeltaE method to use
+    #[arg(short, long, value_enum, default_value = "de2000")]
+    pub method: CLIDEMethod,
 
     /// Verbose mode (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count)]

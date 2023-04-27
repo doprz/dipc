@@ -32,12 +32,13 @@ impl From<Lab> for LabValue {
 }
 
 impl Lab {
-    pub fn to_nearest_palette(self, palette: &[Lab]) -> Self {
+    pub fn to_nearest_palette(self, palette: &[Lab], method: deltae::DEMethod) -> Self {
         let mut min_distance = std::f32::MAX;
         let mut new_color = self;
 
         for &color in palette {
-            let delta = *deltae::DeltaE::new(self, color, deltae::DEMethod::DE2000).value();
+            // let delta = *deltae::DeltaE::new(self, color, deltae::DEMethod::DE2000).value();
+            let delta = *deltae::DeltaE::new(self, color, method).value();
 
             if delta < min_distance {
                 min_distance = delta;
@@ -60,3 +61,52 @@ impl Lab {
 
 // Implement DeltaEq for Lab
 impl<D: deltae::Delta + Copy> deltae::DeltaEq<D> for Lab {}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, clap::ValueEnum)]
+pub enum CLIDEMethod {
+    /// The default DeltaE method
+    DE2000,
+    // /// An implementation of DeltaE with separate tolerances for Lightness and Chroma
+    // DECMC(
+    //     /// Lightness tolerance
+    //     f32,
+    //     /// Chroma tolerance
+    //     f32,
+    // ),
+    /// CIE94 DeltaE implementation, weighted with a tolerance for graphics
+    DE1994G,
+    /// CIE94 DeltaE implementation, weighted with a tolerance for textiles
+    DE1994T,
+    /// The original DeltaE implementation, a basic euclidian distance formula
+    DE1976,
+}
+
+impl Default for CLIDEMethod {
+    fn default() -> Self {
+        Self::DE2000
+    }
+}
+
+impl std::fmt::Display for CLIDEMethod {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CLIDEMethod::DE2000 => write!(f, "de2000"),
+            // CLIDEMethod::DECMC(l, c) => write!(f, "decmc({}, {})", l, c),
+            CLIDEMethod::DE1994G => write!(f, "de1994g"),
+            CLIDEMethod::DE1994T => write!(f, "de1994t"),
+            CLIDEMethod::DE1976 => write!(f, "de1976"),
+        }
+    }
+}
+
+impl From<CLIDEMethod> for deltae::DEMethod {
+    fn from(method: CLIDEMethod) -> Self {
+        match method {
+            CLIDEMethod::DE2000 => Self::DE2000,
+            // CLIDEMethod::DECMC(l, c) => Self::DECMC(l, c),
+            CLIDEMethod::DE1994G => Self::DE1994G,
+            CLIDEMethod::DE1994T => Self::DE1994T,
+            CLIDEMethod::DE1976 => Self::DE1976,
+        }
+    }
+}

@@ -55,8 +55,8 @@ fn main() -> io::Result<()> {
     }
 
     println!(
-        "Color palette: {}\nStyles: {:?}",
-        cli.color_palette, cli.styles
+        "Color palette: {}\nStyles: {:?}\nDeltaE method: {}",
+        cli.color_palette, cli.styles, cli.method
     );
     match &cli.dir_output {
         Some(path) if !path.is_dir() => {
@@ -185,7 +185,7 @@ fn main() -> io::Result<()> {
         image.par_chunks_exact_mut(CHUNK).for_each(|bytes| {
             let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
             let lab = Lab::from(pixel);
-            let new_rgb = lab.to_nearest_palette(&palettes_lab).to_rgb();
+            let new_rgb = lab.to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method)).to_rgb();
             bytes[..3].copy_from_slice(&new_rgb);
         });
 
