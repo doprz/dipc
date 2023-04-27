@@ -140,24 +140,19 @@ pub fn output_file_name(
     input_path: &Path,
     color_palette: &ColorPalette,
     color_palette_variations: &[Palette],
-) -> String {
-    let color_palette: String = match &color_palette {
-        ColorPalette::RawJSON { .. } => String::from("custom"),
-        _ => format!("{}", color_palette),
-    };
-
+) -> PathBuf
+{
+    let mut output = PathBuf::new();
     let mut output_file_name = String::new();
 
     if let Some(dir) = dir_path {
         match dir.to_str() {
-            Some(dir) => output_file_name.push_str(dir),
+            Some(dir) => output.push(dir),
             None => {
                 eprintln!("Failed to convert directory path to string");
                 std::process::exit(1);
             }
         };
-        // TODO: fix cross-platform compatibility
-        output_file_name.push_str("/");
     }
 
     let file_stem = match input_path.file_stem() {
@@ -177,6 +172,10 @@ pub fn output_file_name(
     };
     output_file_name.push_str(file_stem);
 
+    let color_palette: String = match &color_palette {
+        ColorPalette::RawJSON { .. } => String::from("custom"),
+        _ => format!("{}", color_palette),
+    };
     output_file_name.push_str(format!("_{}", color_palette).as_str());
 
     color_palette_variations.iter().for_each(|variation| {
@@ -185,7 +184,7 @@ pub fn output_file_name(
         }
     });
 
-    output_file_name.push_str(".png");
-
-    output_file_name
+    output.push(output_file_name);
+    output.set_extension("png");
+    output
 }
