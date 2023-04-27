@@ -23,9 +23,13 @@ pub struct Cli {
     )]
     pub styles: ColorPaletteStyles,
 
-    /// Output directory
+    /// Output image(s) name/path as a comma-delimited list
+    #[arg(short, long, value_name = "PATH", value_delimiter = ',')]
+    pub output: Option<Vec<PathBuf>>,
+
+    /// Output directory name/path
     #[arg(short, long, value_name = "PATH")]
-    pub output: Option<PathBuf>,
+    pub dir_output: Option<PathBuf>,
 
     /// Verbose mode (-v, -vv, -vvv)
     #[arg(short, long, action = clap::ArgAction::Count)]
@@ -53,7 +57,7 @@ pub struct Cli {
     pub color_palette: ColorPalette,
 
     /// The image(s) to process
-    #[arg(value_name = "FILE")]
+    #[arg(value_name = "FILE", value_delimiter = ',')]
     pub process: Vec<PathBuf>,
 }
 

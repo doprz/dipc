@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::path::Path;
 
 use image::Rgb;
 use serde_json::Value;
@@ -135,18 +136,11 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
 }
 
 pub fn output_file_name(
-    input_file_path: &PathBuf,
+    dir_path: &Option<PathBuf>,
+    input_path: &Path,
     color_palette: &ColorPalette,
     color_palette_variations: &[Palette],
 ) -> String {
-    let file_stem = match input_file_path.file_stem() {
-        Some(stem) => match stem.to_str() {
-            Some(stem) => stem,
-            None => "image",
-        },
-        None => "image",
-    };
-
     let color_palette: String = match &color_palette {
         ColorPalette::RawJSON { .. } => String::from("custom"),
         _ => format!("{}", color_palette),
@@ -154,12 +148,39 @@ pub fn output_file_name(
 
     let mut output_file_name = String::new();
 
+    if let Some(dir) = dir_path {
+        match dir.to_str() {
+            Some(dir) => output_file_name.push_str(dir),
+            None => {
+                eprintln!("Failed to convert directory path to string");
+                std::process::exit(1);
+            }
+        };
+        // TODO: fix cross-platform compatibility
+        output_file_name.push_str("/");
+    }
+
+    let file_stem = match input_path.file_stem() {
+        Some(stem) => match stem.to_str() {
+            Some(stem) => stem,
+            None => {
+                eprintln!("Failed to convert file stem to string");
+                eprintln!("Defaulting to \"image\"");
+                "image"
+            }
+        },
+        None => {
+            eprintln!("Failed to get file stem");
+            eprintln!("Defaulting to \"image\"");
+            "image"
+        }
+    };
     output_file_name.push_str(file_stem);
+
     output_file_name.push_str(format!("_{}", color_palette).as_str());
 
     color_palette_variations.iter().for_each(|variation| {
         if let Some(name) = &variation.name {
-            // output_file_name.push_str(format!("-{}", name).as_str());
             output_file_name.push_str(format!("-{}", name.replace(" ", "_")).as_str());
         }
     });

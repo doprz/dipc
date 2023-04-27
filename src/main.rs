@@ -21,6 +21,10 @@ mod palettes;
 fn main() -> io::Result<()> {
     let total_start = std::time::Instant::now();
     let cli = Cli::parse();
+
+    let stdout = stdout().lock();
+    let mut writer = BufWriter::new(stdout);
+
     if cli.process.is_empty() {
         eprintln!(
             "{}",
@@ -29,14 +33,32 @@ fn main() -> io::Result<()> {
         );
         std::process::exit(127)
     };
-    let stdout = stdout().lock();
-    let mut writer = BufWriter::new(stdout);
+    if let Some(output_vec) = &cli.output {
+        if output_vec.is_empty() {
+            eprintln!(
+                "{}",
+                "You need to provide at least a single output image name or path"
+                    .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+            );
+        }
+    }
+    match &cli.output {
+        Some(output_vec) if output_vec.len() != cli.process.len() => {
+            eprintln!(
+                "{}",
+                "You need to provide the same amount of output image names/paths as input images"
+                    .if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+            );
+            std::process::exit(127)
+        }
+        _ => {}
+    }
 
     println!(
         "Color palette: {}\nStyles: {:?}",
         cli.color_palette, cli.styles
     );
-    match &cli.output {
+    match &cli.dir_output {
         Some(path) if !path.is_dir() => {
             eprintln!(
                 "Output directory \"{}\" does not exist.\nAttempting to create it.",
@@ -52,10 +74,13 @@ fn main() -> io::Result<()> {
         }
         _ => {}
     }
-    if let Some(path) = &cli.output {
+    if let Some(path) = &cli.dir_output {
         println!("Writing results to {:#?} directory.", path);
     }
     println!("Processing {:#?}", &cli.process);
+    if let Some(output_vec) = &cli.output {
+        println!("Output names: {:#?}", output_vec);
+    }
 
     let mut palettes = match parse_palette(cli.color_palette.clone().get_json(), &cli.styles) {
         Ok(p) => p,
@@ -165,25 +190,35 @@ fn main() -> io::Result<()> {
         });
 
         let output_file_name = match &cli.output {
-            Some(path) => {
-                let mut output = path.clone();
-                output.push(output_file_name(&path, &cli.color_palette, &palettes));
-                output
+            Some(output_vec) => {
+                let mut name = std::path::PathBuf::from(output_vec[idx].clone());
+                name.set_extension("png");
+                match &cli.dir_output {
+                    Some(path) => {
+                        let mut output = path.clone();
+                        output.push(name);
+                        output
+                    }
+                    None => {
+                        let mut output = std::path::PathBuf::new();
+                        output.push(name);
+                        output
+                    }
+                }
             }
             None => {
                 let mut output = std::path::PathBuf::new();
-                output.push(output_file_name(&path, &cli.color_palette, &palettes));
+                output.push(output_file_name(&cli.dir_output, &path, &cli.color_palette, &palettes));
                 output
             }
         };
 
         match image.save_with_format(&output_file_name, image::ImageFormat::Png) {
-            Ok(_) => println!("Saved image: {}", output_file_name.display()),
+            Ok(_) => println!("Saved image: {:?}", output_file_name.display()),
             Err(err) => {
                 eprintln!(
-                    "Encountered error while trying to save image {}: {}",
-                    path.display()
-                        .if_supports_color(owo_colors::Stream::Stderr, |text| text.blue()),
+                    "Encountered error while trying to save image \"{}\": {}",
+                    output_file_name.display(),
                     err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
                 );
                 std::process::exit(127)
