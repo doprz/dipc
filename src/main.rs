@@ -19,6 +19,7 @@ mod delta;
 mod palettes;
 
 fn main() -> io::Result<()> {
+    let total_start = std::time::Instant::now();
     let cli = Cli::parse();
     if cli.process.is_empty() {
         eprintln!(
@@ -121,6 +122,7 @@ fn main() -> io::Result<()> {
         })
         .collect();
     for (idx, path) in cli.process.iter().enumerate() {
+        let start = std::time::Instant::now();
         // Open image
         let mut image = match image::open(&path) {
             Ok(i) => i.into_rgba8(),
@@ -187,6 +189,17 @@ fn main() -> io::Result<()> {
                 std::process::exit(127)
             }
         };
+
+        if cli.verbose >= 1 {
+            let duration = start.elapsed().as_secs_f32();
+            println!("Conversion took {} seconds.", duration);
+        }
     }
+
+    if cli.verbose >= 1 {
+        let duration = total_start.elapsed().as_secs_f32();
+        println!("Total duration: {} seconds.", duration);
+    }
+
     Ok(())
 }
