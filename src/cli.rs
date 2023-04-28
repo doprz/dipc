@@ -50,6 +50,7 @@ pub struct Cli {
     ///
     /// Builtin themes:
     ///     - catppuccin
+    ///     - dracula
     ///     - edge
     ///     - everforest
     ///     - gruvbox
@@ -105,6 +106,7 @@ impl FromStr for ColorPaletteStyles {
 pub enum ColorPalette {
     RawJSON { map: serde_json::Map<String, Value> },
     Catppuccin,
+    Dracula,
     Edge,
     Everforest,
     Gruvbox,
@@ -123,6 +125,7 @@ impl std::fmt::Display for ColorPalette {
                 write!(f, "JSON: {}", serde_json::to_string(map).unwrap())
             }
             ColorPalette::Catppuccin => write!(f, "catppuccin"),
+            ColorPalette::Dracula => write!(f, "dracula"),
             ColorPalette::Edge => write!(f, "edge"),
             ColorPalette::Everforest => write!(f, "everforest"),
             ColorPalette::Gruvbox => write!(f, "gruvbox"),
@@ -151,6 +154,7 @@ impl FromStr for ColorPalette {
 
         let palette = match s {
             "catppuccin" => ColorPalette::Catppuccin,
+            "dracula" => ColorPalette::Dracula,
             "edge" => ColorPalette::Edge,
             "everforest" => ColorPalette::Everforest,
             "gruvbox" => ColorPalette::Gruvbox,

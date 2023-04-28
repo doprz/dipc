@@ -9,6 +9,9 @@ impl ColorPalette {
             ColorPalette::Catppuccin => {
                 serde_json::from_str(include_str!("./palettes/catppuccin.json")).unwrap()
             }
+            ColorPalette::Dracula => {
+                serde_json::from_str(include_str!("./palettes/dracula.json")).unwrap()
+            }
             ColorPalette::Edge => {
                 serde_json::from_str(include_str!("./palettes/edge.json")).unwrap()
             }
