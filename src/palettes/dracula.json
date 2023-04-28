@@ -1,15 +1,15 @@
 {
- "Dracula": {
-    "Background": "#282a36",
-    "Selection": "#44475a",
-    "Foreground": "#f8f8f2",
-    "Comment": "#6272a4",
-    "Cyan": "#8be9fd",
-    "Green": "#50fa7b",
-    "Orange": "#ffb86c",
-    "Pink": "#ff79c6",
-    "Purple": "#bd93f9",
-    "Red": "#ff5555",
-    "Yellow": "#f1fa8c"
- }
+    "Dracula": {
+        "Background": "#282A36",
+        "Selection": "#44475A",
+        "Foreground": "#F8F8F2",
+        "Comment": "#6272A4",
+        "Cyan": "#8BE9FD",
+        "Green": "#50FA7B",
+        "Orange": "#FFB86C",
+        "Pink": "#FF79C6",
+        "Purple": "#BD93F9",
+        "Red": "#FF5555",
+        "Yellow": "#F1FA8C"
+    }
 }
