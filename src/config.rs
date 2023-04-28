@@ -140,6 +140,7 @@ pub fn output_file_name(
     input_path: &Path,
     color_palette: &ColorPalette,
     color_palette_variations: &[Palette],
+    method: deltae::DEMethod,
 ) -> PathBuf
 {
     let mut output = PathBuf::new();
@@ -183,6 +184,10 @@ pub fn output_file_name(
             output_file_name.push_str(format!("-{}", name.replace(" ", "_")).as_str());
         }
     });
+
+    if method != deltae::DEMethod::DE2000 {
+        output_file_name.push_str(format!("_{}", method).as_str());
+    }
 
     output.push(output_file_name);
     output.set_extension("png");

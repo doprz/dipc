@@ -208,7 +208,7 @@ fn main() -> io::Result<()> {
             }
             None => {
                 let mut output = std::path::PathBuf::new();
-                output.push(output_file_name(&cli.dir_output, &path, &cli.color_palette, &palettes));
+                output.push(output_file_name(&cli.dir_output, &path, &cli.color_palette, &palettes, deltae::DEMethod::from(cli.method)));
                 output
             }
         };
