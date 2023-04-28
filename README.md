@@ -9,6 +9,7 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 ## Color Palettes/Themes
 
 - catppuccin
+- dracula
 - edge
 - everforest
 - gruvbox
@@ -57,7 +58,7 @@ Options:
   -i, --image <FILE>
           The image to process
       --color-palette <COLOR_PALETTE>
-          The color palette to use [possible values: catppuccin, edge, everforest, gruvbox, gruvbox-material, nord, rose-pine, tokyo-night]
+          The color palette to use [possible values: catppuccin, dracula, edge, everforest, gruvbox, gruvbox-material, nord, rose-pine, tokyo-night]
   -a, --all
           Use all color palette variations
       --color-palette-variation <COLOR_PALETTE_VARIATION>
