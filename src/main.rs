@@ -7,6 +7,7 @@ use rayon::{
     prelude::{IntoParallelIterator, ParallelIterator},
     slice::ParallelSliceMut,
 };
+use indicatif::{ProgressBar, ProgressStyle, ParallelProgressIterator};
 
 use crate::{
     cli::Cli,
@@ -146,6 +147,7 @@ fn main() -> io::Result<()> {
                 .map(|(_name, color)| Lab::from(color.0))
         })
         .collect();
+
     for (idx, path) in cli.process.iter().enumerate() {
         let start = std::time::Instant::now();
         // Open image
@@ -180,14 +182,22 @@ fn main() -> io::Result<()> {
         //     .collect_into_vec(&mut lab);
         //
         // LAB conversion moved into palette
-        //
+
         // Apply palettes to image
-        image.par_chunks_exact_mut(CHUNK).for_each(|bytes| {
+        let progress_bar = ProgressBar::new((image.len() / CHUNK).try_into().expect("Failed to convert usize to u64"));
+        progress_bar.set_style(
+            ProgressStyle::with_template(
+                "[{elapsed_precise}] [{wide_bar}] {pos}/{len} ({eta_precise})",
+            ).expect("Failed to set progress bar style")
+        );
+        let progress_bar_clone = progress_bar.clone();
+        image.par_chunks_exact_mut(CHUNK).progress_with(progress_bar).for_each(|bytes| {
             let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
             let lab = Lab::from(pixel);
             let new_rgb = lab.to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method)).to_rgb();
             bytes[..3].copy_from_slice(&new_rgb);
         });
+        progress_bar_clone.finish();
 
         let output_file_name = match &cli.output {
             Some(output_vec) => {
