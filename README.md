@@ -9,12 +9,15 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 ## Color Palettes/Themes
 
 - catppuccin
+- dracula
 - edge
 - everforest
 - gruvbox
 - gruvbox-material
 - nord
+- onedark
 - rose-pine
+- solarized
 - tokyo-night
 
 ## Examples
