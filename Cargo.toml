@@ -19,3 +19,4 @@ lab = "0.11"
 owo-colors = { version = "3.5", features = ["supports-colors"] }
 supports-color = "2.0"
 rayon = "1.7"
+indicatif = { version = "0.17.3", features = ["rayon"] }
