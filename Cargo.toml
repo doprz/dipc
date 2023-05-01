@@ -7,6 +7,8 @@ homepage = "https://github.com/doprz/dipc"
 repository = "https://github.com/doprz/dipc"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
+keywords = ["cli", "graphics", "utility", "image", "tool"]
+categories = ["command-line-interface", "command-line-utilities", "graphics", "multimedia::images", "rendering"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
