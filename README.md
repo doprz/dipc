@@ -130,6 +130,38 @@ Options:
           Print version
 ```
 
+### Convert all images in directory
+
+```sh
+# Save to current directory
+dipc <PALETTE> <INPUT_DIR>/*
+
+# Save to output directory
+dipc --dir-output <PATH> <PALETTE> <INPUT_DIR>/*
+```
+
+### Convert multiple images
+
+```sh
+dipc <PALETTE> img0.png img1.png
+
+# Rename files
+dipc --output new-img0.png,new-img1.png <PALETTE> img0.png img1.png
+```
+
+### Color palette variation(s)/style(s)
+
+```sh
+dipc --styles Style0 <PALETTE> img.png
+dipc --styles Style0,Style1 <PALETTE> img.png
+```
+
+### CIELAB DeltaE method
+
+```sh
+dipc --method <METHOD> <PALETTE> img.png
+```
+
 ## License
 
 `dipc` is dual-licensed under the terms of both the MIT License and the Apache License 2.0
