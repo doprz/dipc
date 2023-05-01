@@ -2,12 +2,12 @@ use std::io::{self, stdout, BufWriter, Write};
 
 use clap::Parser;
 use delta::Lab;
+use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use owo_colors::{OwoColorize, Style};
 use rayon::{
     prelude::{IntoParallelIterator, ParallelIterator},
     slice::ParallelSliceMut,
 };
-use indicatif::{ProgressBar, ProgressStyle, ParallelProgressIterator};
 
 use crate::{
     cli::Cli,
@@ -151,7 +151,7 @@ fn main() -> io::Result<()> {
     for (idx, path) in cli.process.iter().enumerate() {
         let start = std::time::Instant::now();
         // Open image
-        let mut image = match image::open(&path) {
+        let mut image = match image::open(path) {
             Ok(i) => i.into_rgba8(),
             Err(err) => {
                 eprintln!(
@@ -184,24 +184,34 @@ fn main() -> io::Result<()> {
         // LAB conversion moved into palette
 
         // Apply palettes to image
-        let progress_bar = ProgressBar::new((image.len() / CHUNK).try_into().expect("Failed to convert usize to u64"));
+        let progress_bar = ProgressBar::new(
+            (image.len() / CHUNK)
+                .try_into()
+                .expect("Failed to convert usize to u64"),
+        );
         progress_bar.set_style(
             ProgressStyle::with_template(
                 "[{elapsed_precise}] [{wide_bar}] {pos}/{len} ({eta_precise})",
-            ).expect("Failed to set progress bar style")
+            )
+            .expect("Failed to set progress bar style"),
         );
         let progress_bar_clone = progress_bar.clone();
-        image.par_chunks_exact_mut(CHUNK).progress_with(progress_bar).for_each(|bytes| {
-            let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
-            let lab = Lab::from(pixel);
-            let new_rgb = lab.to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method)).to_rgb();
-            bytes[..3].copy_from_slice(&new_rgb);
-        });
+        image
+            .par_chunks_exact_mut(CHUNK)
+            .progress_with(progress_bar)
+            .for_each(|bytes| {
+                let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
+                let lab = Lab::from(pixel);
+                let new_rgb = lab
+                    .to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method))
+                    .to_rgb();
+                bytes[..3].copy_from_slice(&new_rgb);
+            });
         progress_bar_clone.finish();
 
         let output_file_name = match &cli.output {
             Some(output_vec) => {
-                let mut name = std::path::PathBuf::from(output_vec[idx].clone());
+                let mut name = output_vec[idx].clone();
                 name.set_extension("png");
                 match &cli.dir_output {
                     Some(path) => {
@@ -218,7 +228,13 @@ fn main() -> io::Result<()> {
             }
             None => {
                 let mut output = std::path::PathBuf::new();
-                output.push(output_file_name(&cli.dir_output, &path, &cli.color_palette, &palettes, deltae::DEMethod::from(cli.method)));
+                output.push(output_file_name(
+                    &cli.dir_output,
+                    path,
+                    &cli.color_palette,
+                    &palettes,
+                    deltae::DEMethod::from(cli.method),
+                ));
                 output
             }
         };

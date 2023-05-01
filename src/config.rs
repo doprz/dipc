@@ -1,5 +1,5 @@
-use std::path::PathBuf;
 use std::path::Path;
+use std::path::PathBuf;
 
 use image::Rgb;
 use serde_json::Value;
@@ -79,7 +79,7 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                         2 => 1,
                         _ => unreachable!(),
                     };
-                    for channel in 0..3 {
+                    for (channel, c) in colorarr.iter_mut().enumerate() {
                         let start = channel * channel_length;
                         let Some(channelstr) = color.get(start..start + channel_length) else {
                             return Err(format!(
@@ -91,7 +91,7 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                                 "Failed to parse HEX color string `{hex}`. Only hexadecimal digits are allowed."
                             ));
                         };
-                        colorarr[channel as usize] = val;
+                        *c = val;
                     }
                 }
                 Value::Array(arr) => {
@@ -141,8 +141,7 @@ pub fn output_file_name(
     color_palette: &ColorPalette,
     color_palette_variations: &[Palette],
     method: deltae::DEMethod,
-) -> PathBuf
-{
+) -> PathBuf {
     let mut output = PathBuf::new();
     let mut output_file_name = String::new();
 
@@ -181,7 +180,7 @@ pub fn output_file_name(
 
     color_palette_variations.iter().for_each(|variation| {
         if let Some(name) = &variation.name {
-            output_file_name.push_str(format!("-{}", name.replace(" ", "_")).as_str());
+            output_file_name.push_str(format!("-{}", name.replace(' ', "_")).as_str());
         }
     });
 
