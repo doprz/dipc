@@ -39,6 +39,13 @@ Filipp Romanovski - [https://unsplash.com/@filipp_roman_photography](https://uns
 
 ## Installation
 
+### Homebrew
+
+```sh
+brew tap doprz/dipc
+brew install dipc
+```
+
 ### Cargo
 
 ```sh
