@@ -2,6 +2,11 @@
 
 [![crates.io](https://img.shields.io/crates/v/dipc)](https://crates.io/crates/dipc)
 
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="images/dipc_dark.png">
+    <img alt="dipc light icon" src="images/dipc_light.png">
+</picture>
+
 doprz' image palette converter
 
 Convert your favorite images and wallpapers with your favorite color palettes/themes
@@ -22,16 +27,15 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 
 ## Examples
 
-| Original | Converted |
-| -------- | --------- |
-| ![Magic view of the Gosausee in the Austrian Alps](images/ivan-rohovchenko-pkLBb75JnHc-unsplash.jpg) | ![Magic view of the Gosausee in the Austrian Alps_nord](images/ivan-rohovchenko-pkLBb75JnHc-unsplash_nord-Polar-Night-Snow-Storm-Frost.png) |
-| ![Human vs Nature](images/victor-rosario-pa9sROVpkgQ-unsplash.jpg) | ![Human vs Nature_gruvbox](images/victor-rosario-pa9sROVpkgQ-unsplash_gruvbox-Dark-mode-Light-mode.png) |
+![dipc examples](images/dipc_examples.png)
 
 ### Image Credits
 
-Victor Rosario - [https://unsplash.com/@vrrosario](https://unsplash.com/@vrrosario)
+Paul Bill - [https://unsplash.com/@hoffman11](https://unsplash.com/@hoffman11)
 
-Ivan Rohovchenko - [https://unsplash.com/@ivrn](https://unsplash.com/@ivrn)
+Adrien Vajas - [https://unsplash.com/@adrien_vj](https://unsplash.com/@adrien_vj)
+
+Filipp Romanovski - [https://unsplash.com/@filipp_roman_photography](https://unsplash.com/@filipp_roman_photography)
 
 ## Installation
 
