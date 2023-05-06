@@ -1,21 +1,19 @@
 use std::io::{self, stdout, BufWriter, Write};
 
 use clap::Parser;
-use delta::Lab;
-use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use owo_colors::{OwoColorize, Style};
-use rayon::{
-    prelude::{IntoParallelIterator, ParallelIterator},
-    slice::ParallelSliceMut,
-};
+use rayon::prelude::{IntoParallelIterator, ParallelIterator};
 
 use crate::{
     cli::Cli,
     config::{output_file_name, parse_palette},
+    convert_image_format::{convert_default, convert_gif},
+    delta::Lab,
 };
 
 mod cli;
 mod config;
+mod convert_image_format;
 mod delta;
 mod palettes;
 
@@ -150,69 +148,28 @@ fn main() -> io::Result<()> {
 
     for (idx, path) in cli.process.iter().enumerate() {
         let start = std::time::Instant::now();
-        // Open image
-        let mut image = match image::open(path) {
-            Ok(i) => i.into_rgba8(),
-            Err(err) => {
-                eprintln!(
-                    "Encountered error while opening image at path {}: {}",
-                    path.display()
-                        .if_supports_color(owo_colors::Stream::Stderr, |text| text.blue()),
-                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
-                );
-                std::process::exit(127)
-            }
-        };
-
         println!(
             "[{}/{}] Converting image... (this may take a while)",
             idx + 1,
             cli.process.len()
         );
 
-        const CHUNK: usize = 4;
-        // Convert image to LAB representation
-        // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
-        // image
-        //     .par_chunks_exact(CHUNK)
-        //     .map(|pixel| {
-        //         let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
-        //         Lab::from(pixel)
-        //     })
-        //     .collect_into_vec(&mut lab);
-        //
-        // LAB conversion moved into palette
-
-        // Apply palettes to image
-        let progress_bar = ProgressBar::new(
-            (image.len() / CHUNK)
-                .try_into()
-                .expect("Failed to convert usize to u64"),
-        );
-        progress_bar.set_style(
-            ProgressStyle::with_template(
-                "[{elapsed_precise}] [{wide_bar}] {pos}/{len} ({eta_precise})",
-            )
-            .expect("Failed to set progress bar style"),
-        );
-        let progress_bar_clone = progress_bar.clone();
-        image
-            .par_chunks_exact_mut(CHUNK)
-            .progress_with(progress_bar)
-            .for_each(|bytes| {
-                let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
-                let lab = Lab::from(pixel);
-                let new_rgb = lab
-                    .to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method))
-                    .to_rgb();
-                bytes[..3].copy_from_slice(&new_rgb);
-            });
-        progress_bar_clone.finish();
+        let path_extension: image::ImageFormat = match image::ImageFormat::from_path(path) {
+            Ok(format) => format,
+            Err(err) => {
+                eprintln!(
+                    "Failed to get extension of file \"{}\" with error: {}",
+                    path.display(),
+                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
+                );
+                std::process::exit(127)
+            }
+        };
 
         let output_file_name = match &cli.output {
             Some(output_vec) => {
                 let mut name = output_vec[idx].clone();
-                name.set_extension("png");
+                name.set_extension(path_extension.extensions_str()[0]);
                 match &cli.dir_output {
                     Some(path) => {
                         let mut output = path.clone();
@@ -231,6 +188,7 @@ fn main() -> io::Result<()> {
                 output.push(output_file_name(
                     &cli.dir_output,
                     path,
+                    path_extension.extensions_str()[0],
                     &cli.color_palette,
                     &palettes,
                     deltae::DEMethod::from(cli.method),
@@ -239,17 +197,20 @@ fn main() -> io::Result<()> {
             }
         };
 
-        match image.save_with_format(&output_file_name, image::ImageFormat::Png) {
-            Ok(_) => println!("Saved image: {:?}", output_file_name.display()),
-            Err(err) => {
-                eprintln!(
-                    "Encountered error while trying to save image \"{}\": {}",
-                    output_file_name.display(),
-                    err.if_supports_color(owo_colors::Stream::Stderr, |text| text.red())
-                );
-                std::process::exit(127)
+        match path_extension {
+            image::ImageFormat::Gif => {
+                convert_gif(path, &output_file_name, &palettes_lab, cli.method);
             }
-        };
+            _ => {
+                convert_default(
+                    path,
+                    &output_file_name,
+                    path_extension,
+                    &palettes_lab,
+                    cli.method,
+                );
+            }
+        }
 
         if cli.verbose >= 1 {
             let duration = start.elapsed().as_secs_f32();

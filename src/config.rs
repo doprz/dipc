@@ -138,6 +138,7 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
 pub fn output_file_name(
     dir_path: &Option<PathBuf>,
     input_path: &Path,
+    extension: &str,
     color_palette: &ColorPalette,
     color_palette_variations: &[Palette],
     method: deltae::DEMethod,
@@ -189,6 +190,6 @@ pub fn output_file_name(
     }
 
     output.push(output_file_name);
-    output.set_extension("png");
+    output.set_extension(extension);
     output
 }
