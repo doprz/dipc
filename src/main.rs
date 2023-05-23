@@ -5,7 +5,7 @@ use delta::Lab;
 use indicatif::{ParallelProgressIterator, ProgressBar, ProgressStyle};
 use owo_colors::{OwoColorize, Style};
 use rayon::{
-    prelude::{IntoParallelIterator, ParallelIterator},
+    prelude::{IntoParallelRefIterator, ParallelIterator},
     slice::ParallelSliceMut,
 };
 
@@ -138,12 +138,11 @@ fn main() -> io::Result<()> {
     writer.flush()?;
 
     let palettes_lab: Vec<_> = palettes
-        .clone()
-        .into_par_iter()
+        .par_iter()
         .flat_map_iter(|palette| {
             palette
                 .colors
-                .into_iter()
+                .iter()
                 .map(|(_name, color)| Lab::from(color.0))
         })
         .collect();
