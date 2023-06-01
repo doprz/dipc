@@ -60,6 +60,22 @@ cargo install --path .
 ```
 This will build and install `dipc` in your `~/.cargo/bin`. Make sure that `~/.cargo/bin` is in your `$PATH` variable.
 
+### Docker
+## Installation
+
+```
+user@machine$: git clone https://github.com/doprz/dipc
+user@machine$: cd dipc
+user@machine$: docker build -t <name> .
+```
+
+## Usage
+
+```
+user@machine$: docker run -v <local_output_dir>:<docker_output_dir> -v <local_import_dir>:<docker_import_dir> --rm <image:latest> <themes> --dir-output <docker_output_dir> <docker_import_dir/file>
+```
+
+
 ## Usage
 
 ```
