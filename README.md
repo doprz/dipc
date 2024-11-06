@@ -1,6 +1,7 @@
 # dipc
 
 [![crates.io](https://img.shields.io/crates/v/dipc)](https://crates.io/crates/dipc)
+[![Homebrew](https://img.shields.io/homebrew/v/dipc)](https://formulae.brew.sh/formula/dipc)
 
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="images/dipc_dark.png">
@@ -42,7 +43,6 @@ Filipp Romanovski - [https://unsplash.com/@filipp_roman_photography](https://uns
 ### Homebrew
 
 ```sh
-brew tap doprz/dipc
 brew install dipc
 ```
 
@@ -55,9 +55,11 @@ cargo install dipc
 ### From Source
 
 To build and install from source, first checkout the tag or branch you want to install, then run
+
 ```sh
 cargo install --path .
 ```
+
 This will build and install `dipc` in your `~/.cargo/bin`. Make sure that `~/.cargo/bin` is in your `$PATH` variable.
 
 ## Usage
