@@ -171,17 +171,6 @@ fn main() -> io::Result<()> {
 
         const PIXEL_SIZE: usize = 4;
         const CHUNK: usize = 4096;
-        // Convert image to LAB representation
-        // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
-        // image
-        //     .par_chunks_exact(CHUNK)
-        //     .map(|pixel| {
-        //         let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
-        //         Lab::from(pixel)
-        //     })
-        //     .collect_into_vec(&mut lab);
-        //
-        // LAB conversion moved into palette
 
         // Apply palettes to image
         let progress_bar = ProgressBar::new(
