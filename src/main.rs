@@ -169,7 +169,8 @@ fn main() -> io::Result<()> {
             cli.process.len()
         );
 
-        const CHUNK: usize = 4;
+        const PIXEL_SIZE: usize = 4;
+        const CHUNK: usize = 4096;
         // Convert image to LAB representation
         // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
         // image
@@ -196,15 +197,17 @@ fn main() -> io::Result<()> {
         );
         let progress_bar_clone = progress_bar.clone();
         image
-            .par_chunks_exact_mut(CHUNK)
+            .par_chunks_mut(CHUNK)
             .progress_with(progress_bar)
-            .for_each(|bytes| {
-                let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
-                let lab = Lab::from(pixel);
-                let new_rgb = lab
-                    .to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method))
-                    .to_rgb();
-                bytes[..3].copy_from_slice(&new_rgb);
+            .for_each(|chunk| {
+                chunk.chunks_exact_mut(PIXEL_SIZE).for_each(|bytes| {
+                    let pixel: &mut [u8; 3] = &mut bytes[..3].try_into().unwrap();
+                    let lab = Lab::from(*pixel);
+                    let new_rgb = lab
+                        .to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method))
+                        .to_rgb();
+                    *pixel = new_rgb;
+                });
             });
         progress_bar_clone.finish();
 
