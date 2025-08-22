@@ -14,8 +14,17 @@
     };
   };
 
-  outputs = { self, nixpkgs, crane, flake-utils, advisory-db, ... }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      crane,
+      flake-utils,
+      advisory-db,
+      ...
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
 
@@ -39,7 +48,8 @@
 
           buildInputs = [
             # Add additional build inputs here
-          ] ++ lib.optionals pkgs.stdenv.isDarwin [
+          ]
+          ++ lib.optionals pkgs.stdenv.isDarwin [
             # Additional darwin specific inputs can be set here
             pkgs.libiconv
           ];
@@ -54,9 +64,9 @@
 
         # Build the actual crate itself, reusing the dependency
         # artifacts from above.
-        dipc =
-          craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
-      in {
+        dipc = craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
+      in
+      {
         checks = {
           # Build the crate as part of `nix flake check` for convenience
           inherit dipc;
@@ -67,17 +77,23 @@
           # Note that this is done as a separate derivation so that
           # we can block the CI if there are issues here, but not
           # prevent downstream consumers from building our crate by itself.
-          dipc-clippy = craneLib.cargoClippy (commonArgs // {
-            inherit cargoArtifacts;
-            cargoClippyExtraArgs = "--all-targets -- --deny warnings";
-          });
+          dipc-clippy = craneLib.cargoClippy (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+              cargoClippyExtraArgs = "--all-targets -- --deny warnings";
+            }
+          );
 
-          dipc-doc = craneLib.cargoDoc (commonArgs // {
-            inherit cargoArtifacts;
-            # This can be commented out or tweaked as necessary, e.g. set to
-            # `--deny rustdoc::broken-intra-doc-links` to only enforce that lint
-            env.RUSTDOCFLAGS = "--deny warnings";
-          });
+          dipc-doc = craneLib.cargoDoc (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+              # This can be commented out or tweaked as necessary, e.g. set to
+              # `--deny rustdoc::broken-intra-doc-links` to only enforce that lint
+              env.RUSTDOCFLAGS = "--deny warnings";
+            }
+          );
 
           # Check formatting
           dipc-fmt = craneLib.cargoFmt { inherit src; };
@@ -91,17 +107,24 @@
           # Run tests with cargo-nextest
           # Consider setting `doCheck = false` on `my-crate` if you do not want
           # the tests to run twice
-          dipc-nextest = craneLib.cargoNextest (commonArgs // {
-            inherit cargoArtifacts;
-            partitions = 1;
-            partitionType = "count";
-            cargoNextestPartitionsExtraArgs = "--no-tests=pass";
-          });
+          dipc-nextest = craneLib.cargoNextest (
+            commonArgs
+            // {
+              inherit cargoArtifacts;
+              partitions = 1;
+              partitionType = "count";
+              cargoNextestPartitionsExtraArgs = "--no-tests=pass";
+            }
+          );
         };
 
-        packages = { default = dipc; };
+        packages = {
+          default = dipc;
+        };
 
         apps.default = flake-utils.lib.mkApp { drv = dipc; };
+
+        formatter = pkgs.nixfmt-rfc-style;
 
         devShells.default = craneLib.devShell {
           # Inherit inputs from checks.
@@ -113,6 +136,6 @@
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = with pkgs; [ rust-analyzer ];
         };
-      });
+      }
+    );
 }
-
