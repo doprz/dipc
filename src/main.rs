@@ -169,8 +169,18 @@ fn main() -> io::Result<()> {
             cli.process.len()
         );
 
-        const PIXEL_SIZE: usize = 4;
-        const CHUNK: usize = 4096;
+        const CHUNK: usize = 4;
+        // Convert image to LAB representation
+        // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
+        // image
+        //     .par_chunks_exact(CHUNK)
+        //     .map(|pixel| {
+        //         let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
+        //         Lab::from(pixel)
+        //     })
+        //     .collect_into_vec(&mut lab);
+        //
+        // LAB conversion moved into palette
 
         // Apply palettes to image
         let progress_bar = ProgressBar::new(
@@ -186,17 +196,15 @@ fn main() -> io::Result<()> {
         );
         let progress_bar_clone = progress_bar.clone();
         image
-            .par_chunks_mut(CHUNK)
+            .par_chunks_exact_mut(CHUNK)
             .progress_with(progress_bar)
-            .for_each(|chunk| {
-                chunk.chunks_exact_mut(PIXEL_SIZE).for_each(|bytes| {
-                    let pixel: &mut [u8; 3] = &mut bytes[..3].try_into().unwrap();
-                    let lab = Lab::from(*pixel);
-                    let new_rgb = lab
-                        .to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method))
-                        .to_rgb();
-                    *pixel = new_rgb;
-                });
+            .for_each(|bytes| {
+                let pixel: [u8; CHUNK] = bytes.try_into().unwrap();
+                let lab = Lab::from(pixel);
+                let new_rgb = lab
+                    .to_nearest_palette(&palettes_lab, deltae::DEMethod::from(cli.method))
+                    .to_rgb();
+                bytes[..3].copy_from_slice(&new_rgb);
             });
         progress_bar_clone.finish();
 

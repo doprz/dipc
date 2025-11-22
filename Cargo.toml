@@ -8,23 +8,17 @@ repository = "https://github.com/doprz/dipc"
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 keywords = ["cli", "graphics", "utility", "image", "tool"]
-categories = [
-  "command-line-interface",
-  "command-line-utilities",
-  "graphics",
-  "multimedia::images",
-  "rendering",
-]
+categories = ["command-line-interface", "command-line-utilities", "graphics", "multimedia::images", "rendering"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-clap = { version = "4.5", features = ["derive"] }
+clap = { version = "4.2", features = ["derive"] }
 serde_json = { version = "1.0", features = ["preserve_order"] }
-image = { version = "0.25" }
+image = { version = "0.24", features = ["libwebp", "rgb"] }
 deltae = "0.3"
 lab = "0.11"
-owo-colors = { version = "4.2", features = ["supports-colors"] }
-supports-color = "3.0"
-rayon = "1.10"
-indicatif = { version = "0.17", features = ["rayon"] }
+owo-colors = { version = "3.5", features = ["supports-colors"] }
+supports-color = "2.0"
+rayon = "1.7"
+indicatif = { version = "0.17.3", features = ["rayon"] }
