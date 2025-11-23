@@ -20,7 +20,9 @@ pub fn parse_palette(
             let mut out = Vec::with_capacity(json.len());
             for (style, val) in json {
                 let Value::Object(map) = val else {
-                    return Err(format!("Failed to parse palette style `{style}`: It's value is not a JSON object"))
+                    return Err(format!(
+                        "Failed to parse palette style `{style}`: It's value is not a JSON object"
+                    ));
                 };
                 let mut palette = Palette::try_from(map)
                     .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
@@ -34,7 +36,7 @@ pub fn parse_palette(
             let mut out = Vec::with_capacity(styles.len());
             for style in styles {
                 let Some(Value::Object(map)) = json.remove(style) else {
-                    return Err(format!("Failed to parse palette style `{style}`: It does not exist in the theme JSON source"))
+                    return Err(format!("Failed to parse palette style `{style}`: It does not exist in the theme JSON source"));
                 };
                 let mut palette = Palette::try_from(map)
                     .map_err(|err| format!("Failed to parse palette style `{style}`: {err}"))?;
@@ -86,7 +88,8 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                                 "Failed to parse HEX color string `{hex}`. Does it contain a multi-byte sequence? Only hexadecimal digits are allowed."
                             ));
                         };
-                        let Ok(val) = u8::from_str_radix(channelstr, 16).map(|x| x * multiplier) else {
+                        let Ok(val) = u8::from_str_radix(channelstr, 16).map(|x| x * multiplier)
+                        else {
                             return Err(format!(
                                 "Failed to parse HEX color string `{hex}`. Only hexadecimal digits are allowed."
                             ));
@@ -104,10 +107,14 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                     }
                     for (i, channel) in arr.iter().enumerate() {
                         let Value::Number(num) = channel else {
-                            return Err(format!("Encountered a non-number in a color array: {arr:?}"))
+                            return Err(format!(
+                                "Encountered a non-number in a color array: {arr:?}"
+                            ));
                         };
-                        let Some(Ok(brightness)): Option<Result<u8, _>> = num.as_u64().map(|num| num.try_into()) else {
-                            return Err(format!("Encountered a number not representable by an 8-bit-integer in a color array: {arr:?}, element {i}"))
+                        let Some(Ok(brightness)): Option<Result<u8, _>> =
+                            num.as_u64().map(|num| num.try_into())
+                        else {
+                            return Err(format!("Encountered a number not representable by an 8-bit-integer in a color array: {arr:?}, element {i}"));
                         };
                         colorarr[i] = brightness
                     }
@@ -115,14 +122,20 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                 Value::Object(mut map) => {
                     // For representing a color as a JSON object: `{"r": 255, "g": 128, "b": 0}`
                     for (channel, name) in ["r", "g", "b"].into_iter().enumerate() {
-                        let Some(obj)=map.remove(name) else {
-                            return Err(format!(r#"Key `{name}` not found in JSON object {map:?}. The format is `{{"r": 255, "g": 128, "b": 0\}}"#))
+                        let Some(obj) = map.remove(name) else {
+                            return Err(format!(
+                                r#"Key `{name}` not found in JSON object {map:?}. The format is `{{"r": 255, "g": 128, "b": 0\}}"#
+                            ));
                         };
                         let Value::Number(num) = obj else {
-                            return Err(format!(r#"Key `{name}` has a non-number value in JSON object {map:?}. The format is `{{"r": 255, "g": 128, "b": 0}}"#))
+                            return Err(format!(
+                                r#"Key `{name}` has a non-number value in JSON object {map:?}. The format is `{{"r": 255, "g": 128, "b": 0}}"#
+                            ));
                         };
-                        let Some(Ok(brightness)): Option<Result<u8, _>> = num.as_u64().map(|num| num.try_into()) else {
-                            return Err(format!("Encountered a number not representable by an 8-bit-integer in a color object: at key {name}: {num}"))
+                        let Some(Ok(brightness)): Option<Result<u8, _>> =
+                            num.as_u64().map(|num| num.try_into())
+                        else {
+                            return Err(format!("Encountered a number not representable by an 8-bit-integer in a color object: at key {name}: {num}"));
                         };
                         colorarr[channel] = brightness;
                     }

@@ -178,8 +178,8 @@ impl FromStr for ColorPalette {
                 let json = serde_json::from_reader(file)
                     .map_err(|err| format!("Error while parsing JSON content of {s}: {err}"))?;
                 let Value::Object(map) = json else {
-                return Err("Encountered error while parsing JSON theme file: the contents of the file are valid JSON but do not appear to be a JSON object".to_string());
-            };
+                    return Err("Encountered error while parsing JSON theme file: the contents of the file are valid JSON but do not appear to be a JSON object".to_string());
+                };
                 ColorPalette::RawJSON { map }
             }
         };
