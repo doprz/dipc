@@ -3,11 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-
     crane.url = "github:ipetkov/crane";
-
     flake-utils.url = "github:numtide/flake-utils";
-
     advisory-db = {
       url = "github:rustsec/advisory-db";
       flake = false;
@@ -50,6 +47,18 @@
           ++ lib.optionals pkgs.stdenv.isDarwin [
             pkgs.libiconv
           ];
+
+          meta = {
+            description = "Convert your favorite images and wallpapers with your favorite color palettes/themes";
+            homepage = "https://github.com/doprz/dipc";
+            license = with lib.licenses; [
+              asl20
+              mit
+            ];
+            # maintainers = with lib.maintainers; [ doprz ];
+            platforms = lib.platforms.unix ++ lib.platforms.darwin;
+            mainProgram = "dipc";
+          };
         };
 
         # Build *just* the cargo dependencies, so we can reuse
