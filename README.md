@@ -3,6 +3,10 @@
 [![crates.io](https://img.shields.io/crates/v/dipc)](https://crates.io/crates/dipc)
 [![Homebrew](https://img.shields.io/homebrew/v/dipc)](https://formulae.brew.sh/formula/dipc)
 
+<a href="https://repology.org/project/dipc/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/dipc.svg" alt="Packaging status" align="right">
+</a>
+
 <picture>
     <source media="(prefers-color-scheme: dark)" srcset="images/dipc_dark.png">
     <img alt="dipc light icon" src="images/dipc_light.png">
@@ -72,6 +76,17 @@ cargo install --path .
 ```
 
 This will build and install `dipc` in your `~/.cargo/bin`. Make sure that `~/.cargo/bin` is in your `$PATH` variable.
+
+### Arch Linux (Community Maintained)
+
+For Arch Linux users, `dipc` is available in the Arch User Repository (AUR)
+
+```sh
+yay -S dipc
+```
+
+> [!WARNING]
+> This is a community-maintained version of `dipc` and not an official release.
 
 ## Usage
 
