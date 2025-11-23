@@ -40,16 +40,27 @@ Filipp Romanovski - [https://unsplash.com/@filipp_roman_photography](https://uns
 
 ## Installation
 
+### Cargo
+
+```sh
+cargo install dipc
+```
+
 ### Homebrew
 
 ```sh
 brew install dipc
 ```
 
-### Cargo
+### Nix
+
+`dipc` is available as a flake from GitHub or from nixpkgs
 
 ```sh
-cargo install dipc
+# From GitHub
+nix run github:doprz/dipc
+# From nixpkgs
+nix run nixpkgs#dipc
 ```
 
 ### From Source
