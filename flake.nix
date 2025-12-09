@@ -67,6 +67,13 @@
 
         # Build the actual crate itself, reusing the dependency artifacts from above.
         dipc = craneLib.buildPackage (commonArgs // { inherit cargoArtifacts; });
+
+        docker = pkgs.dockerTools.buildLayeredImage {
+          name = "dipc";
+          config = {
+            Cmd = [ "${dipc}/bin/dipc" ];
+          };
+        };
       in
       {
         checks = {
@@ -116,6 +123,7 @@
         packages = {
           default = dipc;
           inherit dipc;
+          inherit docker;
         };
 
         apps.default = flake-utils.lib.mkApp { drv = dipc; };
