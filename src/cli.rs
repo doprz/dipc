@@ -25,7 +25,8 @@ pub struct Cli {
     )]
     pub styles: ColorPaletteStyles,
 
-    /// Output image(s) name/path as a comma-delimited list
+    /// Output image(s) name/path as a comma-delimited list.
+    /// Use `-` to write to stdout
     #[arg(short, long, value_name = "PATH", value_delimiter = ',')]
     pub output: Option<Vec<PathBuf>>,
 
@@ -63,7 +64,8 @@ pub struct Cli {
     #[arg(value_name = "PALETTE", verbatim_doc_comment)]
     pub color_palette: ColorPalette,
 
-    /// The image(s) to process
+    /// The image(s) to process.
+    /// Use `-` to read from stdin
     #[arg(value_name = "FILE", value_delimiter = ',')]
     pub process: Vec<PathBuf>,
 }
