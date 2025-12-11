@@ -187,9 +187,9 @@ pub fn output_file_name(
 
     let color_palette: String = match &color_palette {
         ColorPalette::RawJSON { .. } => String::from("custom"),
-        _ => format!("{}", color_palette),
+        _ => format!("{color_palette}"),
     };
-    output_file_name.push_str(format!("_{}", color_palette).as_str());
+    output_file_name.push_str(format!("_{color_palette}").as_str());
 
     color_palette_variations.iter().for_each(|variation| {
         if let Some(name) = &variation.name {
@@ -198,7 +198,7 @@ pub fn output_file_name(
     });
 
     if method != deltae::DEMethod::DE2000 {
-        output_file_name.push_str(format!("_{}", method).as_str());
+        output_file_name.push_str(format!("_{method}").as_str());
     }
 
     output.push(output_file_name);

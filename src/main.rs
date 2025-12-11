@@ -92,11 +92,11 @@ fn main() -> io::Result<()> {
 
     if !output_to_stdout {
         if let Some(path) = &cli.dir_output {
-            println!("Writing results to {:#?} directory.", path);
+            println!("Writing results to {path:#?} directory.");
         }
         println!("Processing {:#?}", &cli.process);
         if let Some(output_vec) = &cli.output {
-            println!("Output names: {:#?}", output_vec);
+            println!("Output names: {output_vec:#?}");
         }
     }
 
@@ -326,13 +326,13 @@ fn main() -> io::Result<()> {
 
         if !output_to_stdout && cli.verbose >= 1 {
             let duration = start.elapsed().as_secs_f32();
-            println!("Conversion took {} seconds.", duration);
+            println!("Conversion took {duration} seconds.");
         }
     }
 
     if !output_to_stdout && cli.verbose >= 1 {
         let duration = total_start.elapsed().as_secs_f32();
-        println!("Total duration: {} seconds.", duration);
+        println!("Total duration: {duration} seconds.");
     }
 
     Ok(())

@@ -33,7 +33,7 @@ impl From<Lab> for LabValue {
 
 impl Lab {
     pub fn to_nearest_palette(self, palette: &[Lab], method: deltae::DEMethod) -> Self {
-        let mut min_distance = std::f32::MAX;
+        let mut min_distance = f32::MAX;
         let mut new_color = self;
 
         for &color in palette {
