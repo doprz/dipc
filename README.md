@@ -102,7 +102,7 @@ Arguments:
               - path to a theme in JSON
               - a JSON string with the theme (starting with `JSON: {}`)
           Run with --help instead of -h for a list of all builtin themes
-
+          
           Builtin themes:
               - catppuccin
               - dracula
@@ -117,29 +117,29 @@ Arguments:
               - tokyo-night
 
   [FILE]...
-          The image(s) to process
+          The image(s) to process. Use `-` to read from stdin
 
 Options:
   -s, --styles <VARIATIONS>
           The color palette variation(s) to use
           Run with --help instead of -h for a list of all possible values
-
+          
           Possible values:
               - `all` to generate an image for each of the variations
               - `none` if you are using a flat theme without variations
               - or a comma-delimited list of the names of variations it should use
-
+          
           [default: all]
 
   -o, --output <PATH>
-          Output image(s) name/path as a comma-delimited list
+          Output image(s) name/path as a comma-delimited list. Use `-` to write to stdout
 
   -d, --dir-output <PATH>
           Output directory name/path
 
   -m, --method <METHOD>
           CIELAB DeltaE method to use
-
+          
           [default: de2000]
 
           Possible values:
@@ -188,6 +188,13 @@ dipc --styles Style0,Style1 <PALETTE> img.png
 
 ```sh
 dipc --method <METHOD> <PALETTE> img.png
+```
+
+### Support for stdin/stdout
+
+```sh
+grim -g "$(slurp)" - | dipc catppuccin - -o - | swappy -f -
+cat image.png | dipc gruvbox - -o - > themed.png
 ```
 
 ## License
