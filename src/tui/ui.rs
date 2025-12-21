@@ -11,6 +11,14 @@ use crate::tui::{
     utils::truncate,
 };
 
+const CLR_ACCENT: Color = Color::Green; // Focused borders, titles
+const CLR_SUCCESS: Color = Color::Green; // Selected items, success
+const CLR_TEXT: Color = Color::White; // Light text
+const CLR_TEXT_DIM: Color = Color::Gray; // Dimmed text
+const CLR_SURFACE: Color = Color::Rgb(50, 50, 50); // Highlight background
+const CLR_BORDER: Color = Color::DarkGray; // Unfocused borders
+const CLR_WARNING: Color = Color::Yellow; // Yellow, warning
+
 pub fn ui(frame: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -45,7 +53,7 @@ pub fn ui(frame: &mut Frame, app: &mut App) {
 
     // Help bar
     let help = Paragraph::new(HELP_TEXT)
-        .style(Style::default().fg(Color::DarkGray))
+        .style(Style::default().fg(CLR_TEXT_DIM))
         .alignment(Alignment::Center);
     frame.render_widget(help, help_bar);
 
@@ -68,11 +76,11 @@ fn render_files(frame: &mut Frame, app: &mut App, area: Rect) {
         .map(|e| {
             let selected = app.selected_files.contains(&e.path);
             let (icon, color) = if e.name == ".." || e.is_dir {
-                ("", Color::Blue)
+                ("", CLR_ACCENT)
             } else if selected {
-                ("", Color::Green)
+                ("", CLR_SUCCESS)
             } else {
-                ("", Color::White)
+                ("", CLR_TEXT)
             };
             let marker = if selected { "●" } else { " " };
             let style = Style::default().fg(color);
@@ -82,7 +90,7 @@ fn render_files(frame: &mut Frame, app: &mut App, area: Rect) {
 
     let list = List::new(items)
         .block(block(&title, focused))
-        .highlight_style(Style::default().bg(Color::Rgb(60, 60, 80)).bold())
+        .highlight_style(Style::default().bg(CLR_SURFACE).bold())
         .highlight_symbol("▌");
 
     frame.render_stateful_widget(list, area, &mut app.file_state);
@@ -90,7 +98,7 @@ fn render_files(frame: &mut Frame, app: &mut App, area: Rect) {
 
 fn render_palette(frame: &mut Frame, app: &mut App, area: Rect) {
     let focused = app.panel == Panel::Palette;
-    let title = format!(" Palette ");
+    let title = " Palette ".to_string();
 
     let items: Vec<ListItem> = app
         .palette_entries
@@ -100,28 +108,24 @@ fn render_palette(frame: &mut Frame, app: &mut App, area: Rect) {
                 let selected = *idx == app.selected_palette_idx;
                 let marker = if selected { "▼" } else { "▶" };
                 let style = if selected {
-                    Style::default().fg(Color::Cyan).bold()
+                    Style::default().fg(CLR_ACCENT).bold()
                 } else {
-                    Style::default().fg(Color::White)
+                    Style::default().fg(CLR_TEXT)
                 };
-                ListItem::new(format!(" {} {}", marker, name)).style(style)
+                ListItem::new(format!(" {marker} {name}")).style(style)
             }
             PaletteEntry::Variation { name, .. } => {
                 let selected = app.selected_variations.contains(name);
                 let marker = if selected { "●" } else { "○" };
-                let color = if selected {
-                    Color::Green
-                } else {
-                    Color::DarkGray
-                };
-                ListItem::new(format!("    {} {}", marker, name)).style(Style::default().fg(color))
+                let color = if selected { CLR_SUCCESS } else { CLR_TEXT_DIM };
+                ListItem::new(format!("    {marker} {name}")).style(Style::default().fg(color))
             }
         })
         .collect();
 
     let list = List::new(items)
         .block(block(&title, focused))
-        .highlight_style(Style::default().bg(Color::Rgb(60, 60, 80)))
+        .highlight_style(Style::default().bg(CLR_SURFACE))
         .highlight_symbol("▌");
 
     frame.render_stateful_widget(list, area, &mut app.palette_state);
@@ -158,7 +162,7 @@ fn render_preview(frame: &mut Frame, app: &App, area: Rect) {
             ));
             spans.push(Span::styled(
                 format!(" {:<12} ", truncate(name, 12)),
-                Style::default().fg(Color::White),
+                Style::default().fg(CLR_TEXT),
             ));
         }
         lines.push(Line::from(spans));
@@ -192,8 +196,8 @@ fn render_output(frame: &mut Frame, app: &App, area: Rect) {
         .iter()
         .map(|s| {
             Line::from(Span::styled(
-                format!("  {}", s),
-                Style::default().fg(Color::DarkGray),
+                format!("  {s}"),
+                Style::default().fg(CLR_TEXT_DIM),
             ))
         })
         .collect();
@@ -201,7 +205,7 @@ fn render_output(frame: &mut Frame, app: &App, area: Rect) {
     if app.selected_files.len() > 5 {
         lines.push(Line::from(Span::styled(
             format!("  ... and {} more", app.selected_files.len() - 5),
-            Style::default().fg(Color::DarkGray).italic(),
+            Style::default().fg(CLR_TEXT_DIM).italic(),
         )));
     }
 
@@ -210,12 +214,9 @@ fn render_output(frame: &mut Frame, app: &App, area: Rect) {
 
     // Status line
     let status = if app.selected_files.is_empty() {
-        Span::styled(
-            "Select files to process",
-            Style::default().fg(Color::Yellow),
-        )
+        Span::styled("Select files to process", Style::default().fg(CLR_WARNING))
     } else {
-        Span::styled("Press Enter to process", Style::default().fg(Color::Green))
+        Span::styled("Press Enter to process", Style::default().fg(CLR_SUCCESS))
     };
     let status_line = Paragraph::new(status).alignment(Alignment::Center);
     frame.render_widget(status_line, chunks[1]);
@@ -226,13 +227,13 @@ fn render_help_popup(frame: &mut Frame) {
     frame.render_widget(Clear, area);
 
     let popup = Paragraph::new(HELP_POPUP)
-        .style(Style::default().fg(Color::White))
+        .style(Style::default().fg(CLR_TEXT))
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Cyan))
+                .border_style(Style::default().fg(CLR_ACCENT))
                 .title(" Help ")
-                .title_style(Style::default().fg(Color::Cyan).bold()),
+                .title_style(Style::default().fg(CLR_ACCENT).bold()),
         )
         .wrap(Wrap { trim: false });
     frame.render_widget(popup, area);
@@ -246,11 +247,11 @@ fn render_input_popup(frame: &mut Frame, app: &App) {
         .block(
             Block::default()
                 .borders(Borders::ALL)
-                .border_style(Style::default().fg(Color::Cyan))
+                .border_style(Style::default().fg(CLR_ACCENT))
                 .title(" Enter path ")
-                .title_style(Style::default().fg(Color::Cyan).bold()),
+                .title_style(Style::default().fg(CLR_ACCENT).bold()),
         )
-        .style(Style::default().fg(Color::White));
+        .style(Style::default().fg(CLR_TEXT));
     frame.render_widget(input, area);
 
     frame.set_cursor_position(Position::new(
@@ -260,15 +261,11 @@ fn render_input_popup(frame: &mut Frame, app: &App) {
 }
 
 fn block(title: &str, focused: bool) -> Block<'_> {
-    let border_color = if focused {
-        Color::Cyan
-    } else {
-        Color::DarkGray
-    };
+    let border_color = if focused { CLR_ACCENT } else { CLR_BORDER };
     let title_style = if focused {
-        Style::default().fg(Color::Cyan).bold()
+        Style::default().fg(CLR_ACCENT).bold()
     } else {
-        Style::default().fg(Color::White)
+        Style::default().fg(CLR_TEXT)
     };
 
     Block::default()
