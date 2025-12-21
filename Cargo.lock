@@ -353,7 +353,7 @@ checksum = "3ef311e2c0a388b9ba56c839ac68d33b92d18ce7104d0acc4375cb479e2b9a53"
 
 [[package]]
 name = "dipc"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "clap",
  "deltae",
