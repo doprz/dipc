@@ -19,6 +19,7 @@ mod cli;
 mod config;
 mod delta;
 mod palettes;
+mod tui;
 
 /// Check if path represents stdin/stdout
 fn is_stdio(path: &std::path::Path) -> bool {
@@ -27,7 +28,21 @@ fn is_stdio(path: &std::path::Path) -> bool {
 
 fn main() -> io::Result<()> {
     let total_start = std::time::Instant::now();
-    let cli = Cli::parse();
+    let mut cli = Cli::parse();
+
+    if cli.tui {
+        match tui::run()? {
+            Some(config) => {
+                cli.color_palette = Some(config.palette);
+                cli.styles = config.styles;
+                cli.process = config.files;
+            }
+            None => return Ok(()),
+        }
+    }
+
+    // At this point, color_palette is guaranteed to be Some (enforced by clap or TUI)
+    let color_palette = cli.color_palette.expect("color palette required");
 
     let stdout = stdout().lock();
     let mut writer = BufWriter::new(stdout);
@@ -70,7 +85,7 @@ fn main() -> io::Result<()> {
     if !output_to_stdout {
         println!(
             "Color palette: {}\nStyles: {:?}\nDeltaE method: {}",
-            cli.color_palette, cli.styles, cli.method
+            color_palette, cli.styles, cli.method
         );
     }
     match &cli.dir_output {
@@ -100,7 +115,7 @@ fn main() -> io::Result<()> {
         }
     }
 
-    let mut palettes = match parse_palette(cli.color_palette.clone().get_json(), &cli.styles) {
+    let mut palettes = match parse_palette(color_palette.clone().get_json(), &cli.styles) {
         Ok(p) => p,
         Err(err) => {
             eprintln!(
@@ -209,17 +224,6 @@ fn main() -> io::Result<()> {
         }
 
         const CHUNK: usize = 4;
-        // Convert image to LAB representation
-        // let mut lab = Vec::with_capacity(image.as_raw().len() / CHUNK);
-        // image
-        //     .par_chunks_exact(CHUNK)
-        //     .map(|pixel| {
-        //         let pixel: [u8; CHUNK] = pixel.try_into().unwrap();
-        //         Lab::from(pixel)
-        //     })
-        //     .collect_into_vec(&mut lab);
-        //
-        // LAB conversion moved into palette
 
         // Apply palettes to image (skip progress bar when piping to stdout)
         if output_to_stdout {
@@ -282,7 +286,7 @@ fn main() -> io::Result<()> {
                 output.push(output_file_name(
                     &cli.dir_output,
                     path,
-                    &cli.color_palette,
+                    &color_palette,
                     &palettes,
                     deltae::DEMethod::from(cli.method),
                 ));
