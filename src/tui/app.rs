@@ -226,9 +226,11 @@ impl App {
                 let mut variations: Vec<_> = json.keys().cloned().collect();
                 variations.sort();
 
-                for v in variations {
-                    self.palette_entries
-                        .push(PaletteEntry::Variation { name: v, idx });
+                for var_name in variations {
+                    self.palette_entries.push(PaletteEntry::Variation {
+                        name: var_name,
+                        idx,
+                    });
                 }
             }
         }
@@ -244,33 +246,32 @@ impl App {
         let palette = &PALETTES[self.selected_palette_idx].1;
         let json = palette.clone().get_json();
 
-        if self.selected_variations.is_empty() {
-            // Show all colors from first variation or flat palette
-            if let Some((_, first_val)) = json.iter().next() {
-                if let serde_json::Value::Object(map) = first_val {
-                    for (name, val) in map {
-                        if let Some(color) = parse_color_value(val) {
-                            self.preview_colors.push((name.clone(), color));
-                        }
-                    }
-                } else if let Some(color) = parse_color_value(first_val) {
-                    if let Some((name, _)) = json.iter().next() {
-                        self.preview_colors.push((name.clone(), color));
-                    }
-                }
-            }
+        // Collect unique colors (by RGB value) to avoid duplicates
+        let mut seen: HashSet<[u8; 3]> = HashSet::new();
+
+        let variations_to_show: Vec<&String> = if self.selected_variations.is_empty() {
+            // No variations selected: show all variations
+            json.keys().collect()
         } else {
-            // Show colors from first selected variation
-            if let Some(var_name) = self.selected_variations.iter().next() {
-                if let Some(serde_json::Value::Object(map)) = json.get(var_name) {
-                    for (name, val) in map {
-                        if let Some(color) = parse_color_value(val) {
+            // Show only selected variations
+            self.selected_variations.iter().collect()
+        };
+
+        for var_name in variations_to_show {
+            if let Some(serde_json::Value::Object(map)) = json.get(var_name) {
+                for (name, val) in map {
+                    if let Some(color) = parse_color_value(val) {
+                        if seen.insert(color) {
                             self.preview_colors.push((name.clone(), color));
                         }
                     }
                 }
             }
         }
+
+        // Sort by color name for consistent display
+        self.preview_colors
+            .sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
     }
 
     fn selected_palette(&self) -> &ColorPalette {
