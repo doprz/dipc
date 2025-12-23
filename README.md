@@ -93,10 +93,10 @@ yay -S dipc
 ```
 Convert your favorite images and wallpapers with your favorite color palettes/themes
 
-Usage: dipc [OPTIONS] <PALETTE> [FILE]...
+Usage: dipc [OPTIONS] [PALETTE] [FILE]...
 
 Arguments:
-  <PALETTE>
+  [PALETTE]
           The color palette to use:
               - name of a builtin theme
               - path to a theme in JSON
@@ -151,12 +151,23 @@ Options:
   -v, --verbose...
           Verbose mode (-v, -vv, -vvv)
 
+      --tui
+          Launch interactive TUI mode
+
   -h, --help
           Print help (see a summary with '-h')
 
   -V, --version
           Print version
 ```
+
+### TUI
+
+```sh
+dipc --tui
+```
+
+![dipc tui](images/dipc_tui.png)
 
 ### Convert all images in directory
 
