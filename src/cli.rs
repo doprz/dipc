@@ -42,6 +42,10 @@ pub struct Cli {
     #[arg(short, long, action = clap::ArgAction::Count)]
     pub verbose: u8,
 
+    /// Launch interactive TUI mode
+    #[arg(long)]
+    pub tui: bool,
+
     // Arguments
     /// The color palette to use:
     ///     - name of a builtin theme
@@ -61,12 +65,20 @@ pub struct Cli {
     ///     - rose-pine
     ///     - solarized
     ///     - tokyo-night
-    #[arg(value_name = "PALETTE", verbatim_doc_comment)]
-    pub color_palette: ColorPalette,
+    #[arg(
+        value_name = "PALETTE",
+        verbatim_doc_comment,
+        required_unless_present = "tui"
+    )]
+    pub color_palette: Option<ColorPalette>,
 
     /// The image(s) to process.
     /// Use `-` to read from stdin
-    #[arg(value_name = "FILE", value_delimiter = ',')]
+    #[arg(
+        value_name = "FILE",
+        value_delimiter = ',',
+        required_unless_present = "tui"
+    )]
     pub process: Vec<PathBuf>,
 }
 
