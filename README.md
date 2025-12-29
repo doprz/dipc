@@ -42,6 +42,17 @@ Adrien Vajas - [https://unsplash.com/@adrien_vj](https://unsplash.com/@adrien_vj
 
 Filipp Romanovski - [https://unsplash.com/@filipp_roman_photography](https://unsplash.com/@filipp_roman_photography)
 
+## Philosophy
+
+`dipc` follows the Unix philosophy: **do one thing well**.
+
+It converts your favorite images and wallpapers with your favorite color palettes/themes.
+That's it. No OCR, no AI upscaling, no feature bloat. This focused approach means:
+
+- **Fast:** No bloat, just color conversion algorithms
+- **Reliable:** Simple tools break less often
+- **Composable:** Built for pipelines with full stdin/stdout support (see [examples](#support-for-stdinstdout))
+
 ## Installation
 
 ### Cargo
@@ -87,6 +98,21 @@ yay -S dipc
 
 > [!WARNING]
 > This is a community-maintained version of `dipc` and not an official release.
+
+## Contributing
+
+Contributions are welcome! Whether it's bug reports, feature requests, or code contributions.
+
+### Guidelines
+
+- **Issues:** Found a bug or have a feature idea? [Open an issue](https://github.com/doprz/dipc/issues)
+- **Pull Requests:** Fork, create a branch, make your changes, and submit a PR
+- **Commit Messages:** This project uses [Conventional Commits](https://www.conventionalcommits.org/)
+  - `feat:` for new features
+  - `fix:` for bug fixes
+  - `docs:` for documentation changes
+  - `refactor:` for code refactoring
+  - Example: `feat: add GPU support`
 
 ## Usage
 
