@@ -24,6 +24,7 @@ Convert your favorite images and wallpapers with your favorite color palettes/th
 - everforest
 - gruvbox
 - gruvbox-material
+- kanagawa
 - nord
 - onedark
 - rose-pine
@@ -136,6 +137,7 @@ Arguments:
               - everforest
               - gruvbox
               - gruvbox-material
+              - kanagawa
               - nord
               - onedark
               - rose-pine
