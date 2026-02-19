@@ -6,6 +6,7 @@ impl ColorPalette {
     pub fn get_json(self) -> serde_json::Map<String, Value> {
         let colors = match self {
             ColorPalette::RawJSON { map } => return map,
+
             ColorPalette::Catppuccin => {
                 serde_json::from_str(include_str!("./palettes/catppuccin.json")).unwrap()
             }
@@ -23,6 +24,9 @@ impl ColorPalette {
             }
             ColorPalette::GruvboxMaterial => {
                 serde_json::from_str(include_str!("./palettes/gruvbox-material.json")).unwrap()
+            }
+            ColorPalette::Kanagawa => {
+                serde_json::from_str(include_str!("./palettes/kanagawa.json")).unwrap()
             }
             ColorPalette::Nord => {
                 serde_json::from_str(include_str!("./palettes/nord.json")).unwrap()

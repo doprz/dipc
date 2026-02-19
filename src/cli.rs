@@ -60,6 +60,7 @@ pub struct Cli {
     ///     - everforest
     ///     - gruvbox
     ///     - gruvbox-material
+    ///     - kanagawa
     ///     - nord
     ///     - onedark
     ///     - rose-pine
@@ -125,6 +126,7 @@ pub enum ColorPalette {
     Everforest,
     Gruvbox,
     GruvboxMaterial,
+    Kanagawa,
     Nord,
     OneDark,
     RosePine,
@@ -144,6 +146,7 @@ impl std::fmt::Display for ColorPalette {
             ColorPalette::Everforest => write!(f, "everforest"),
             ColorPalette::Gruvbox => write!(f, "gruvbox"),
             ColorPalette::GruvboxMaterial => write!(f, "gruvbox-material"),
+            ColorPalette::Kanagawa => write!(f, "kanagawa"),
             ColorPalette::Nord => write!(f, "nord"),
             ColorPalette::OneDark => write!(f, "onedark"),
             ColorPalette::RosePine => write!(f, "rose-pine"),
@@ -175,6 +178,7 @@ impl FromStr for ColorPalette {
             "gruvbox-material" | "gruvbox_material" | "gruvboxmaterial" => {
                 ColorPalette::GruvboxMaterial
             }
+            "kanagawa" => ColorPalette::Kanagawa,
             "nord" => ColorPalette::Nord,
             "onedark" | "one_dark" | "one-dark" => ColorPalette::OneDark,
             "rose-pine" | "rose_pine" | "rosepine" => ColorPalette::RosePine,
