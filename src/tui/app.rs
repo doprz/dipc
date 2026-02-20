@@ -16,6 +16,7 @@ pub const PALETTES: &[(&str, ColorPalette)] = &[
     ("Everforest", ColorPalette::Everforest),
     ("Gruvbox", ColorPalette::Gruvbox),
     ("Gruvbox Material", ColorPalette::GruvboxMaterial),
+    ("Kanagawa", ColorPalette::Kanagawa),
     ("Nord", ColorPalette::Nord),
     ("One Dark", ColorPalette::OneDark),
     ("Rose Pine", ColorPalette::RosePine),
