@@ -26,6 +26,13 @@ fn is_stdio(path: &std::path::Path) -> bool {
     path.as_os_str() == "-"
 }
 
+fn with_default_output_extension(mut path: std::path::PathBuf) -> std::path::PathBuf {
+    if !is_stdio(&path) && path.extension().is_none() {
+        path.set_extension("png");
+    }
+    path
+}
+
 fn main() -> io::Result<()> {
     let total_start = std::time::Instant::now();
     let mut cli = Cli::parse();
@@ -264,10 +271,7 @@ fn main() -> io::Result<()> {
 
         let output_file_name = match &cli.output {
             Some(output_vec) => {
-                let mut name = output_vec[idx].clone();
-                if !is_stdio(&name) {
-                    name.set_extension("png");
-                }
+                let name = with_default_output_extension(output_vec[idx].clone());
                 match &cli.dir_output {
                     Some(path) => {
                         let mut output = path.clone();
@@ -311,7 +315,7 @@ fn main() -> io::Result<()> {
             }
             io::stdout().lock().write_all(&buf)?;
         } else {
-            match image.save_with_format(&output_file_name, image::ImageFormat::Png) {
+            match image.save(&output_file_name) {
                 Ok(_) => {
                     if !output_to_stdout {
                         println!("Saved image: {:?}", output_file_name.display());
@@ -340,4 +344,24 @@ fn main() -> io::Result<()> {
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::with_default_output_extension;
+    use std::path::PathBuf;
+
+    #[test]
+    fn preserves_requested_output_extension() {
+        let output = with_default_output_extension(PathBuf::from("themed.jpg"));
+
+        assert_eq!(output, PathBuf::from("themed.jpg"));
+    }
+
+    #[test]
+    fn defaults_extensionless_output_to_png() {
+        let output = with_default_output_extension(PathBuf::from("themed"));
+
+        assert_eq!(output, PathBuf::from("themed.png"));
+    }
 }
