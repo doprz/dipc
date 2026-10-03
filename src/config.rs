@@ -77,7 +77,7 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                     }
                     let channel_length = color.len() / 3;
                     let multiplier = match channel_length {
-                        1 => 16,
+                        1 => 17,
                         2 => 1,
                         _ => unreachable!(),
                     };
