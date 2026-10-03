@@ -1,5 +1,6 @@
 use ratatui::{
     crossterm::{
+        cursor::Show,
         event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyEventKind},
         execute,
         terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -21,9 +22,41 @@ mod app;
 mod ui;
 mod utils;
 
+struct TerminalCleanup {
+    active: bool,
+}
+
+impl TerminalCleanup {
+    fn restore(
+        &mut self,
+        terminal: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
+    ) -> Result<()> {
+        disable_raw_mode()?;
+        execute!(
+            terminal.backend_mut(),
+            LeaveAlternateScreen,
+            DisableMouseCapture
+        )?;
+        terminal.show_cursor()?;
+        self.active = false;
+        Ok(())
+    }
+}
+
+impl Drop for TerminalCleanup {
+    fn drop(&mut self) {
+        if self.active {
+            let _ = disable_raw_mode();
+            let mut stdout = stdout();
+            let _ = execute!(stdout, LeaveAlternateScreen, DisableMouseCapture, Show);
+        }
+    }
+}
+
 pub fn run() -> Result<Option<TuiConfig>> {
     // Pre-run
     enable_raw_mode()?;
+    let mut cleanup = TerminalCleanup { active: true };
     let mut stdout = stdout();
     execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
 
@@ -59,13 +92,7 @@ pub fn run() -> Result<Option<TuiConfig>> {
     }
 
     // Post-run
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-    terminal.show_cursor()?;
+    cleanup.restore(&mut terminal)?;
 
     Ok(if app.should_run { app.config() } else { None })
 }
