@@ -140,7 +140,11 @@ impl TryFrom<serde_json::Map<String, Value>> for Palette {
                         colorarr[channel] = brightness;
                     }
                 }
-                _ => {}
+                other => {
+                    return Err(format!(
+                        "Encountered an unsupported color value for `{name}`: {other:?}"
+                    ));
+                }
             };
             colors.push((name, Rgb(colorarr)))
         }
